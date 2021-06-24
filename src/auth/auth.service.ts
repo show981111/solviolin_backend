@@ -64,7 +64,6 @@ export class AuthService {
 
     async login(user: any) {
         //issue new refreshToken and accessToken. then update refreshToken in Database
-        console.log(user);
         const payload = {
             userID: user.userID,
             userPhone: user.userPhone,

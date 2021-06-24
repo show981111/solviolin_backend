@@ -8,13 +8,16 @@ import {
     InternalServerErrorException,
     Body,
     UnauthorizedException,
+    UseFilters,
 } from '@nestjs/common';
+import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
+@UseFilters(new TypeOrmExceptionFilter())
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
