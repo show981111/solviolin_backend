@@ -25,7 +25,10 @@ export class User {
         onUpdate: 'CASCADE',
     })
     @JoinColumn({ name: 'FK_USER_branch' })
-    branchName: Branch;
+    branch: Branch;
+
+    @Column({ name: 'FK_USER_branch' })
+    branchName: string;
 
     @Column({ type: 'int', width: 11, nullable: false, default: 0 })
     userDuration: number;
@@ -64,9 +67,8 @@ export class User {
         this.userName = CreateUserDto.userName;
         this.userPhone = CreateUserDto.userPhone;
         this.userType = CreateUserDto.userType;
-        let br = new Branch();
-        br.branchName = CreateUserDto.userBranch;
-        this.branchName = br;
+        let br = new Branch(CreateUserDto.userBranch);
+        this.branch = br;
         this.userDuration = CreateUserDto.userDuration;
         this.totalClassCount = CreateUserDto.totalClassCount;
         if (CreateUserDto.token) this.token = CreateUserDto.token;

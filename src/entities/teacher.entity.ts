@@ -1,0 +1,55 @@
+import { Branch } from 'src/entities/branch.entity';
+import { CreateTeacherDto } from 'src/teacher/dto/create-teacher.dto';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
+import { TeacherID } from './teacherID.entity';
+
+@Entity('TEACHER')
+export class Teacher {
+    @PrimaryGeneratedColumn('increment')
+    id: number;
+
+    @ManyToOne((type) => TeacherID, (TeacherID) => TeacherID.teacherID, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
+    @JoinColumn({ name: 'FK_TEACHER_teacherID' })
+    teacher: TeacherID;
+
+    @Column({ name: 'FK_TEACHER_teacherID' })
+    teacherID: string;
+
+    @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
+    @JoinColumn({ name: 'FK_TEACHER_branch' })
+    branch: Branch;
+
+    @Column({ name: 'FK_TEACHER_branch' })
+    branchName: string;
+
+    @Column({ type: 'tinyint', nullable: false })
+    workDow: number;
+
+    @Column({ type: 'time', nullable: false })
+    startTime: Date;
+
+    @Column({ type: 'time', nullable: false })
+    endTime: Date;
+
+    setTeacher(createTeacherDto: CreateTeacherDto): void {
+        let br = new Branch(createTeacherDto.teacherBranch);
+        let tr = new TeacherID(createTeacherDto.teacherID);
+        this.teacher = tr;
+        this.branch = br;
+        this.workDow = createTeacherDto.workDow;
+        this.startTime = createTeacherDto.startTime;
+        this.endTime = createTeacherDto.endTime;
+    }
+}

@@ -8,6 +8,10 @@ import { MariaDBConfigService } from './config/database/mariadb/configuration.se
 import { MariaDBConfigModule } from './config/database/mariadb/configuration.module';
 import { Branch } from './entities/branch.entity';
 import { User } from './entities/user.entity';
+import { TeacherModule } from './teacher/teacher.module';
+import { Control } from './entities/control.entity';
+import { Teacher } from './entities/teacher.entity';
+import { TeacherID } from './entities/teacherID.entity';
 
 @Module({
     imports: [
@@ -20,7 +24,7 @@ import { User } from './entities/user.entity';
                 port: MariaDBConfigService.port,
                 username: MariaDBConfigService.username,
                 password: MariaDBConfigService.password,
-                entities: [Branch, User],
+                entities: [User, Branch, Control, Teacher, TeacherID],
                 // synchronize: true,
                 charset: 'utf8mb4_unicode_ci',
                 logging: ['query', 'error'],
@@ -29,6 +33,7 @@ import { User } from './entities/user.entity';
         }),
         AuthModule,
         UserModule,
+        TeacherModule,
     ],
     controllers: [AppController],
     providers: [AppService],
