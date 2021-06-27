@@ -6,16 +6,16 @@ interface Query {
     teacher?: TeacherID;
 }
 
-export class QueryTeacherDto {
+export class QueryTeacherBranchDto {
     @IsString()
     @IsOptional()
     @IsNotEmpty()
-    readonly teacherID: string;
+    readonly teacherID?: string;
 
     @IsString()
     @IsOptional()
     @IsNotEmpty()
-    readonly branchName: string;
+    readonly branchName?: string;
 
     get getQuery(): Query {
         var query: Query = {};

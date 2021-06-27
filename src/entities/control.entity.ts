@@ -1,3 +1,4 @@
+import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { Branch } from 'src/entities/branch.entity';
 import {
     Column,
@@ -5,10 +6,16 @@ import {
     PrimaryGeneratedColumn,
     ManyToOne,
     JoinColumn,
+    Index,
 } from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 
 @Entity('CONTROL')
+@Index(
+    'unique_row',
+    ['controlStart', 'controlEnd', 'teacherID', 'branchName', 'status'],
+    { unique: true },
+)
 export class Control {
     @PrimaryGeneratedColumn('increment')
     id: number;
@@ -41,4 +48,12 @@ export class Control {
 
     @Column({ type: 'tinyint', nullable: false })
     status: number;
+
+    setControl(createControlDto: CreateControlDto): void {
+        this.controlStart = createControlDto.controlStart;
+        this.controlEnd = createControlDto.controlEnd;
+        this.branchName = createControlDto.teacherBranch;
+        this.teacherID = createControlDto.teacherID;
+        this.status = createControlDto.status;
+    }
 }

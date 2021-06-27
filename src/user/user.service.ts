@@ -40,4 +40,11 @@ export class UserService {
             refreshToken: refreshToken,
         });
     }
+
+    async getUserByTypeAndBranch(userType: number, branchName: string) {
+        return this.usersRepository.find({
+            userType: userType,
+            branchName: branchName,
+        });
+    }
 }

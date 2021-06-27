@@ -12,6 +12,8 @@ import { TeacherModule } from './teacher/teacher.module';
 import { Control } from './entities/control.entity';
 import { Teacher } from './entities/teacher.entity';
 import { TeacherID } from './entities/teacherID.entity';
+import { ControlModule } from './control/control.module';
+import { ReservationModule } from './reservation/reservation.module';
 
 @Module({
     imports: [
@@ -34,6 +36,8 @@ import { TeacherID } from './entities/teacherID.entity';
         AuthModule,
         UserModule,
         TeacherModule,
+        ControlModule,
+        ReservationModule,
     ],
     controllers: [AppController],
     providers: [AppService],

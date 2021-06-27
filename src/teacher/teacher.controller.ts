@@ -5,38 +5,46 @@ import {
     Body,
     Delete,
     Get,
-    Patch,
     Param,
     Query,
+    UseGuards,
 } from '@nestjs/common';
+import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { QueryTeacherDto } from './dto/query-teacher.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { QueryTeacherBranchDto } from '../utils/query-teacher-branch.dto';
 import { TeacherService } from './teacher.service';
 
 @Controller('teacher')
 @UseFilters(new TypeOrmExceptionFilter())
 export class TeacherController {
     constructor(private teacherService: TeacherService) {}
+    /**
+     * delete conflicts data and insert new data
+     * @param teacherData
+     * @returns
+     */
     @Post()
+    @UseGuards(JwtAdminGuard)
     create(@Body() teacherData: CreateTeacherDto) {
         return this.teacherService.create(teacherData);
     }
 
     @Delete('/:id')
+    @UseGuards(JwtAdminGuard)
     removeById(@Param('id') id: number) {
         return this.teacherService.removeById(id);
     }
 
     @Delete()
-    removeByQuery(@Query() queryTeacherDto: QueryTeacherDto) {
+    @UseGuards(JwtAdminGuard)
+    removeByQuery(@Query() queryTeacherDto: QueryTeacherBranchDto) {
         return this.teacherService.removeByQuery(queryTeacherDto);
         // return `${teacherID} AND ${branch}`;
     }
 
     @Get('/search') //teacherID or Branch
-    serachTeacher(@Query() queryTeacherDto: QueryTeacherDto) {
+    serachTeacher(@Query() queryTeacherDto: QueryTeacherBranchDto) {
         return this.teacherService.search(queryTeacherDto);
     }
 }

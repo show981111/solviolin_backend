@@ -1,12 +1,23 @@
 import { BranchRepository } from 'src/branch/branch.repository';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { Column, Entity, ManyToOne, PrimaryColumn, JoinColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryColumn,
+    JoinColumn,
+    OneToMany,
+} from 'typeorm';
+import { Reservation } from './reservation.entity';
 
 @Entity('USER')
 export class User {
     @PrimaryColumn('varchar', { length: 45 })
     userID: string;
+
+    @OneToMany((type) => Reservation, (Reservation) => Reservation.user)
+    reservations: Reservation[];
 
     @Column({ nullable: false })
     userPassword: string;

@@ -7,8 +7,7 @@ import {
 import { Teacher } from 'src/entities/teacher.entity';
 import { InsertResult } from 'typeorm';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { QueryTeacherDto } from './dto/query-teacher.dto';
-import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { QueryTeacherBranchDto } from '../utils/query-teacher-branch.dto';
 import { TeacherRepository } from './teacher.repository';
 
 @Injectable()
@@ -30,7 +29,7 @@ export class TeacherService {
         return res;
     }
 
-    async removeByQuery(query: QueryTeacherDto): Promise<any> {
+    async removeByQuery(query: QueryTeacherBranchDto): Promise<any> {
         var q = query.getQuery;
         if (!q.branch && !q.teacher)
             throw new BadRequestException('should set at least one property');
@@ -39,7 +38,7 @@ export class TeacherService {
         return res;
     }
 
-    async search(query: QueryTeacherDto): Promise<any> {
+    async search(query: QueryTeacherBranchDto): Promise<any> {
         return await this.teacherRepository.find(query.getQuery);
     }
 
@@ -68,5 +67,9 @@ export class TeacherService {
             ids.push(conflicts[i].id);
         }
         return await this.teacherRepository.delete(ids);
+    }
+
+    async getTeacherByBranch(branchName: string): Promise<any> {
+        return await this.teacherRepository.find({ branchName: branchName });
     }
 }

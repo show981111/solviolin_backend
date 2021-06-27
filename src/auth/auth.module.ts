@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtConfigModule } from 'src/config/jwt/configuration.module';
 import { JwtConfigService } from 'src/config/jwt/configuration.service';
 import { JwtRefreshStategy } from 'src/auth/strategies/jwt-refresh.strategy';
+import { JwtAdminStrategy } from './strategies/jwt-admin.strategy';
 @Module({
     imports: [
         JwtConfigModule,
@@ -16,7 +17,13 @@ import { JwtRefreshStategy } from 'src/auth/strategies/jwt-refresh.strategy';
         PassportModule,
         JwtModule.register({}),
     ],
-    providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStategy],
+    providers: [
+        AuthService,
+        LocalStrategy,
+        JwtStrategy,
+        JwtRefreshStategy,
+        JwtAdminStrategy,
+    ],
     controllers: [AuthController],
 })
 export class AuthModule {}
