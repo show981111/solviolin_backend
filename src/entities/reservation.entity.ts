@@ -53,9 +53,9 @@ export class Reservation {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     })
-    @JoinColumn({ name: 'FK_Reservation_branch' })
+    @JoinColumn({ name: 'FK_RESERVATION_branch' })
     branch: Branch;
 
-    @Column({ name: 'FK_Reservation_branch' })
+    @Column({ name: 'FK_RESERVATION_branch' })
     branchName: string;
 }

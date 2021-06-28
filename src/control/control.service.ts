@@ -22,7 +22,7 @@ export class ControlService {
         if (createControlDto.teacherID === 'all') {
             const teacherList = await this.userService.getUserByTypeAndBranch(
                 1,
-                createControlDto.teacherBranch,
+                createControlDto.branchName,
             );
             for (var i = 0; i < teacherList.length; i++) {
                 createControlDto.teacherID = teacherList[i].userID;

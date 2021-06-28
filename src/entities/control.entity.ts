@@ -52,7 +52,7 @@ export class Control {
     setControl(createControlDto: CreateControlDto): void {
         this.controlStart = createControlDto.controlStart;
         this.controlEnd = createControlDto.controlEnd;
-        this.branchName = createControlDto.teacherBranch;
+        this.branchName = createControlDto.branchName;
         this.teacherID = createControlDto.teacherID;
         this.status = createControlDto.status;
     }

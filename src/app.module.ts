@@ -14,6 +14,9 @@ import { Teacher } from './entities/teacher.entity';
 import { TeacherID } from './entities/teacherID.entity';
 import { ControlModule } from './control/control.module';
 import { ReservationModule } from './reservation/reservation.module';
+import { Reservation } from './entities/reservation.entity';
+import { Term } from './entities/term.entity';
+import { TermModule } from './term/term.module';
 
 @Module({
     imports: [
@@ -26,10 +29,19 @@ import { ReservationModule } from './reservation/reservation.module';
                 port: MariaDBConfigService.port,
                 username: MariaDBConfigService.username,
                 password: MariaDBConfigService.password,
-                entities: [User, Branch, Control, Teacher, TeacherID],
+                entities: [
+                    User,
+                    Branch,
+                    Control,
+                    Teacher,
+                    TeacherID,
+                    Reservation,
+                    Term,
+                ],
                 // synchronize: true,
                 charset: 'utf8mb4_unicode_ci',
                 logging: ['query', 'error'],
+                timezone: '+00:00',
             }),
             inject: [MariaDBConfigService],
         }),
@@ -38,6 +50,7 @@ import { ReservationModule } from './reservation/reservation.module';
         TeacherModule,
         ControlModule,
         ReservationModule,
+        TermModule,
     ],
     controllers: [AppController],
     providers: [AppService],

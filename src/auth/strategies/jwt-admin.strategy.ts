@@ -15,7 +15,10 @@ export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
 
     async validate(payload: any) {
         if (payload.sub === 'admin')
-            return { userID: payload.userID, userPhone: payload.userPhone };
+            return {
+                userID: payload.userID,
+                userPhone: payload.userPhone,
+            };
         else throw new UnauthorizedException('not admin');
     }
 }

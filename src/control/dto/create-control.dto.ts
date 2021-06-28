@@ -6,7 +6,7 @@ export class CreateControlDto {
     teacherID: string;
 
     @IsString()
-    readonly teacherBranch: string;
+    readonly branchName: string;
 
     @IsDateString()
     readonly controlStart: Date;
