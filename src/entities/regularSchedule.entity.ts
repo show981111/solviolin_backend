@@ -1,12 +1,27 @@
 import { Branch } from 'src/entities/branch.entity';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 import { User } from './user.entity';
 
-@Entity('RESERVATION')
-export class Reservation {
+@Entity('REGULARSCHEDULE')
+export class RegularSchedule {
     @PrimaryGeneratedColumn('increment')
     id: number;
+
+    @Column({ type: 'time', nullable: false })
+    startTime: Date;
+
+    @Column({ type: 'time', nullable: false })
+    endTime: Date;
+
+    @Column({ type: 'tinyint', nullable: false })
+    dow: number;
 
     @Column({ type: 'datetime', nullable: false })
     startDate: Date;
@@ -14,28 +29,15 @@ export class Reservation {
     @Column({ type: 'datetime', nullable: false })
     endDate: Date;
 
-    @Column({ type: 'tinyint', nullable: false, default: 0 })
-    bookingStatus: number;
-    /**
-     * 1 : userMakeUpBook 2 : userCancel 3 : userExtend
-     * -1 : adminMakeUpBook -2 : adminCancel 3 : adminExtend <= admin is not counted
-     */
-
-    @Column({ type: 'int', width: 11, nullable: false, default: 0 })
-    extendedMin: number;
-
-    @Column({ type: 'tinyint', nullable: false, default: 1 })
-    isOriginal: number;
-
     /** USER */
     @ManyToOne((type) => User, (User) => User.userID, {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     })
-    @JoinColumn({ name: 'FK_RESERVATION_userID' })
+    @JoinColumn({ name: 'FK_REGULARSCHEDULE_userID' })
     user: User;
 
-    @Column({ name: 'FK_RESERVATION_userID' })
+    @Column({ name: 'FK_REGULARSCHEDULE_userID' })
     userID: string;
 
     /** TEACHERID */
@@ -43,10 +45,10 @@ export class Reservation {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     })
-    @JoinColumn({ name: 'FK_RESERVATION_teacherID' })
+    @JoinColumn({ name: 'FK_REGULARSCHEDULE_teacherID' })
     teacher: TeacherID;
 
-    @Column({ name: 'FK_RESERVATION_teacherID' })
+    @Column({ name: 'FK_REGULARSCHEDULE_teacherID' })
     teacherID: string;
 
     /** BRANCH */
@@ -54,9 +56,9 @@ export class Reservation {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     })
-    @JoinColumn({ name: 'FK_RESERVATION_branch' })
+    @JoinColumn({ name: 'FK_REGULARSCHEDULE_branch' })
     branch: Branch;
 
-    @Column({ name: 'FK_RESERVATION_branch' })
+    @Column({ name: 'FK_REGULARSCHEDULE_branch' })
     branchName: string;
 }

@@ -1,5 +1,6 @@
-import { IsDateString, IsString } from 'class-validator';
-import { IsAfterStart } from 'src/utils/isAfterStart.decorator';
+import { Transform, Type } from 'class-transformer';
+import { IsDate, IsDateString, IsString } from 'class-validator';
+import { IsAfterStart } from 'src/utils/decorators/isAfterStart.decorator';
 
 export class CreateReservationDto {
     @IsString()
@@ -8,10 +9,12 @@ export class CreateReservationDto {
     @IsString()
     readonly branchName: string;
 
-    @IsDateString()
+    @IsDate()
+    @Type(() => Date)
     readonly startDate: Date;
 
-    @IsDateString()
+    @IsDate()
     @IsAfterStart('startDate')
+    @Type(() => Date)
     readonly endDate: Date;
 }

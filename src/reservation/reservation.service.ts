@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ForbiddenException,
     Injectable,
     MethodNotAllowedException,
@@ -6,46 +7,21 @@ import {
 } from '@nestjs/common';
 import { Reservation } from 'src/entities/reservation.entity';
 import { Term } from 'src/entities/term.entity';
+import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TermService } from 'src/term/term.service';
-import { UpdateResult } from 'typeorm';
+import { InsertResult, UpdateResult } from 'typeorm';
+import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ReservationRepository } from './reservation.repository';
+import { ValidateReservationSerivce } from './validateReservation.service';
 
 @Injectable()
-export class ReservationService {
+export class ReservationService extends ValidateReservationSerivce {
     constructor(
-        private readonly reservationRepository: ReservationRepository,
-        private readonly termService: TermService,
-    ) {}
-
-    private async isCancelAvailable(userID: string): Promise<Boolean> {
-        const termList: Term[] = await this.termService.getTerm();
-        console.log(termList[0]);
-        const res = await this.reservationRepository
-            .createQueryBuilder()
-            .leftJoin('Reservation.user', 'user')
-            .select([
-                'Reservation.id',
-                'Reservation.userID',
-                'Reservation.startDate',
-                'Reservation.endDate',
-                'Reservation.teacherID',
-                'Reservation.branchName',
-                'Reservation.bookingStatus',
-                'Reservation.extendedMin',
-                'user.userCredit',
-            ])
-            .where('FK_RESERVATION_userID = :userID', { userID: userID })
-            .andWhere('bookingStatus = -1')
-            .andWhere('startDate >= :termStart', {
-                termStart: termList[0].termStart,
-            })
-            .andWhere('endDate <= :termEnd', { termEnd: termList[0].termEnd })
-            .getMany();
-        //if result is [], then user does not cancel any class in current term
-        //which means cancel is possible
-        if (res?.length == 0 || res?.length < res[0]?.user?.userCredit) {
-            return true;
-        } else return false;
+        protected readonly reservationRepository: ReservationRepository,
+        protected readonly termService: TermService,
+        protected readonly regularScheduleService: RegularScheduleService,
+    ) {
+        super(reservationRepository, termService, regularScheduleService);
     }
 
     async cancelCourseByAdmin(id: number): Promise<UpdateResult> {
@@ -54,20 +30,38 @@ export class ReservationService {
         });
     }
 
-    async cancelCourseByUser(
-        id: number,
-        userID: string,
-    ): Promise<UpdateResult> {
+    async cancelCourseByUser(id: number, userID: string): Promise<UpdateResult> {
         const res = await this.isCancelAvailable(userID);
         if (res) {
             return await this.reservationRepository.update(
                 { id: id, userID: userID },
-                { bookingStatus: -1 },
+                { bookingStatus: 2 },
             );
         } else {
-            throw new MethodNotAllowedException(
-                'exceed maximum number of cancellation',
-            );
+            throw new MethodNotAllowedException('exceeds maximum number of cancellation');
         }
+    }
+
+    async reserveMakeUpCourseByUser(
+        createReservationDto: CreateReservationDto,
+        userID: string, //: Promise<InsertResult>
+    ) {
+        const [isTimelineValid, isMakeUpAvailable] = await Promise.all([
+            this.checkTimeLine(
+                userID,
+                createReservationDto.startDate,
+                createReservationDto.endDate,
+                createReservationDto.teacherID,
+                createReservationDto.branchName,
+            ),
+            this.isMakeUpAvailable(
+                userID,
+                createReservationDto.startDate,
+                createReservationDto.endDate,
+            ),
+        ]);
+        if (!isTimelineValid) throw new BadRequestException('timeline should be matched');
+        if (!isMakeUpAvailable) throw new BadRequestException('MakeUpCourse is not available');
+        return 'Availabiltiy pass';
     }
 }

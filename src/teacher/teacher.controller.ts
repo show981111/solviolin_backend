@@ -10,7 +10,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
-import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
+import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { QueryTeacherBranchDto } from '../utils/query-teacher-branch.dto';
 import { TeacherService } from './teacher.service';

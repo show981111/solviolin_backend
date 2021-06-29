@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseFilters } from '@nestjs/common';
-import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
+import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 

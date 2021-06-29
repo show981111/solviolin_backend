@@ -11,7 +11,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { QueryTeacherBranchDto } from 'src/utils/query-teacher-branch.dto';
-import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
+import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { ControlService } from './control.service';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';

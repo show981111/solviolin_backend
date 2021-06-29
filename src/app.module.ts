@@ -17,6 +17,8 @@ import { ReservationModule } from './reservation/reservation.module';
 import { Reservation } from './entities/reservation.entity';
 import { Term } from './entities/term.entity';
 import { TermModule } from './term/term.module';
+import { RegularSchedule } from './entities/regularSchedule.entity';
+import { RegularScheduleModule } from './regular-schedule/regular-schedule.module';
 
 @Module({
     imports: [
@@ -37,6 +39,7 @@ import { TermModule } from './term/term.module';
                     TeacherID,
                     Reservation,
                     Term,
+                    RegularSchedule,
                 ],
                 // synchronize: true,
                 charset: 'utf8mb4_unicode_ci',
@@ -51,6 +54,7 @@ import { TermModule } from './term/term.module';
         ControlModule,
         ReservationModule,
         TermModule,
+        RegularScheduleModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -10,7 +10,7 @@ import {
     UnauthorizedException,
     UseFilters,
 } from '@nestjs/common';
-import { TypeOrmExceptionFilter } from 'src/utils/typeOrmException.filter';
+import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';

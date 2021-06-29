@@ -9,6 +9,7 @@ import {
     JoinColumn,
     OneToMany,
 } from 'typeorm';
+import { RegularSchedule } from './regularSchedule.entity';
 import { Reservation } from './reservation.entity';
 
 @Entity('USER')
@@ -18,6 +19,12 @@ export class User {
 
     @OneToMany((type) => Reservation, (Reservation) => Reservation.user)
     reservations: Reservation[];
+
+    @OneToMany(
+        (type) => RegularSchedule,
+        (RegularSchedule) => RegularSchedule.user,
+    )
+    regularSchedules: RegularSchedule[];
 
     @Column({ nullable: false })
     userPassword: string;

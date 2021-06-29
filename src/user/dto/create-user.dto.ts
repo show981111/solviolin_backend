@@ -1,5 +1,5 @@
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { IsValidPhoneNumber } from 'src/utils/validate-phone.decorator';
+import { IsValidPhoneNumber } from 'src/utils/decorators/validate-phone.decorator';
 
 export class CreateUserDto {
     @IsString()

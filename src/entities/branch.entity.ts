@@ -1,6 +1,7 @@
 import { User } from 'src/entities/user.entity';
 import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Control } from './control.entity';
+import { RegularSchedule } from './regularSchedule.entity';
 import { Reservation } from './reservation.entity';
 import { Teacher } from './teacher.entity';
 
@@ -20,6 +21,12 @@ export class Branch {
 
     @OneToMany((type) => Reservation, (Reservation) => Reservation.branch)
     reservations: Reservation[];
+
+    @OneToMany(
+        (type) => RegularSchedule,
+        (RegularSchedule) => RegularSchedule.branch,
+    )
+    regularSchedules: RegularSchedule[];
 
     constructor(branch: string) {
         this.branchName = branch;
