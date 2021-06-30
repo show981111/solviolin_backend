@@ -1,10 +1,4 @@
-import {
-    BadRequestException,
-    ForbiddenException,
-    Injectable,
-    MethodNotAllowedException,
-    NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { Reservation } from 'src/entities/reservation.entity';
 import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
@@ -30,6 +24,10 @@ export class ReservationService extends ValidateReservationSerivce {
         });
     }
 
+    async getCourseInfo(id: number) {
+        return await this.reservationRepository.findOne(id);
+    }
+
     async cancelCourseByUser(id: number, userID: string): Promise<UpdateResult> {
         const res = await this.isCancelAvailable(userID);
         if (res) {
@@ -44,9 +42,13 @@ export class ReservationService extends ValidateReservationSerivce {
 
     async reserveMakeUpCourseByUser(
         createReservationDto: CreateReservationDto,
-        userID: string, //: Promise<InsertResult>
-    ) {
-        const [isTimelineValid, isMakeUpAvailable] = await Promise.all([
+        userID: string,
+    ): Promise<InsertResult> {
+        var courseDuration =
+            (createReservationDto.startDate.valueOf() - createReservationDto.endDate.valueOf()) /
+            60000;
+
+        const [isTimelineValid, isMakeUpAvailable, isTimeLineConflict] = await Promise.all([
             this.checkTimeLine(
                 userID,
                 createReservationDto.startDate,
@@ -54,14 +56,65 @@ export class ReservationService extends ValidateReservationSerivce {
                 createReservationDto.teacherID,
                 createReservationDto.branchName,
             ),
-            this.isMakeUpAvailable(
-                userID,
+            this.isMakeUpAvailable(userID, courseDuration),
+            this.isTimeLineConflict(
                 createReservationDto.startDate,
                 createReservationDto.endDate,
+                createReservationDto.teacherID,
             ),
         ]);
-        if (!isTimelineValid) throw new BadRequestException('timeline should be matched');
-        if (!isMakeUpAvailable) throw new BadRequestException('MakeUpCourse is not available');
-        return 'Availabiltiy pass';
+        let makeUpCourse = new Reservation();
+        makeUpCourse.setReservation(createReservationDto, userID, 1);
+        return await this.reservationRepository.insert(makeUpCourse);
+    }
+
+    async reserveMakeUpCourseByAdmin(
+        createReservationDto: CreateReservationDto,
+        count: number,
+    ): Promise<InsertResult> {
+        if (!createReservationDto.userID) throw new BadRequestException('userID should be defined');
+        const isConflict = await this.isTimeLineConflict(
+            createReservationDto.startDate,
+            createReservationDto.endDate,
+            createReservationDto.teacherID,
+        );
+        let makeUpCourse = new Reservation();
+        var status = -1;
+        if (count === 1) status = 1;
+        makeUpCourse.setReservation(createReservationDto, createReservationDto.userID, status);
+        return await this.reservationRepository.insert(makeUpCourse);
+    }
+
+    async extendCourseByUser(courseInfo: Reservation, userID: string): Promise<UpdateResult> {
+        const [isExtendAvailable, isTimeLineConflict] = await Promise.all([
+            this.isMakeUpAvailable(userID, 15),
+            this.isTimeLineConflict(
+                courseInfo.startDate,
+                courseInfo.endDate,
+                courseInfo.teacherID,
+                courseInfo.id,
+            ),
+        ]);
+        return await this.reservationRepository.update(courseInfo.id, {
+            bookingStatus: 3,
+            endDate: courseInfo.endDate,
+            extendedMin: courseInfo.extendedMin + 15,
+        });
+    }
+
+    async extendCourseByAdmin(courseInfo: Reservation, count: number): Promise<UpdateResult> {
+        const isTimeLineConflict = await this.isTimeLineConflict(
+            courseInfo.startDate,
+            courseInfo.endDate,
+            courseInfo.teacherID,
+            courseInfo.id,
+        );
+        var status = -3;
+        if (count === 1) status = 3;
+        return await this.reservationRepository.update(courseInfo.id, {
+            bookingStatus: status,
+            endDate: courseInfo.endDate,
+            extendedMin: courseInfo.extendedMin + 15,
+        });
     }
 }

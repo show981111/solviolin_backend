@@ -8,12 +8,18 @@ import {
     Body,
     UseGuards,
     UseInterceptors,
+    UsePipes,
+    ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
+import { Reservation } from 'src/entities/reservation.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
+import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
+import { ValidateReservationTime } from './pipes/validate-reservation-time.pipe';
 import { ReservationService } from './reservation.service';
 
 @Controller('reservation')
@@ -29,8 +35,10 @@ export class ReservationController {
     @Patch('/user/cancel/:id')
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(UpdateResultChecker)
-    cancelByUser(@Request() req, @Param('id') id: number) {
-        return this.reservationService.cancelCourseByUser(id, req?.user?.userID);
+    cancelByUser(@Request() req, @Param('id', CheckCancelBefore4h) courseInfo: Reservation) {
+        if (courseInfo.userID !== req?.user?.userID)
+            throw new ForbiddenException("cannot cancel other users' course");
+        return this.reservationService.cancelCourseByUser(courseInfo.id, req?.user?.userID);
     }
 
     @Patch('/admin/cancel/:id')
@@ -42,8 +50,10 @@ export class ReservationController {
 
     @Post('/user')
     @UseGuards(JwtAuthGuard)
-    reserveMakeUpCourseByUser(@Body() createReservationDto: CreateReservationDto, @Request() req) {
-        console.log(createReservationDto);
+    reserveMakeUpCourseByUser(
+        @Body(ValidateReservationTime) createReservationDto: CreateReservationDto,
+        @Request() req,
+    ) {
         return this.reservationService.reserveMakeUpCourseByUser(
             createReservationDto,
             req?.user?.userID,
@@ -51,21 +61,32 @@ export class ReservationController {
     }
 
     @Post('/admin/:count')
+    @UseGuards(JwtAdminGuard)
     reserveMakeUpCourseByAdmin(
         @Body() createReservationDto: CreateReservationDto,
         @Param('count') count: number,
-        @Request() req,
     ) {
-        return 'user book a makeup class';
+        return this.reservationService.reserveMakeUpCourseByAdmin(createReservationDto, count);
     }
 
     @Patch('/user/extend/:id')
-    extendCourseByUser(@Param('id') id: number) {
-        return 'user extend the course';
+    @UseGuards(JwtAuthGuard)
+    @UsePipes(IdToEntityTransform, ValidateReservationTime)
+    @UseInterceptors(UpdateResultChecker)
+    extendCourseByUser(@Param('id') courseInfo: Reservation, @Request() req) {
+        if (courseInfo.userID !== req?.user?.userID)
+            throw new ForbiddenException("cannot extend other users' course");
+        return this.reservationService.extendCourseByUser(courseInfo, req?.user?.userID);
     }
 
     @Patch('/admin/extend/:id/:count')
-    extendCourseByAdmin(@Param('id') id: number, @Param('count') count: number) {
-        return 'user extend the course';
+    @UseGuards(JwtAdminGuard)
+    @UseInterceptors(UpdateResultChecker)
+    extendCourseByAdmin(
+        @Param('id', IdToEntityTransform) courseInfo: Reservation,
+        @Param('count') count: number,
+    ) {
+        console.log(courseInfo);
+        return this.reservationService.extendCourseByAdmin(courseInfo, count);
     }
 }

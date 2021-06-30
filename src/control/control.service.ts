@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Control } from 'src/entities/control.entity';
 import { UserService } from 'src/user/user.service';
-import { QueryTeacherBranchDto } from 'src/utils/query-teacher-branch.dto';
+import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { ControlRepository } from './control.repository';
 import { CreateControlDto } from './dto/create-control.dto';
@@ -13,8 +13,8 @@ export class ControlService {
         private readonly userService: UserService,
     ) {}
 
-    async getControlByQuery(query: QueryTeacherBranchDto): Promise<any> {
-        return await this.controlRepository.find(query.getQuery);
+    async getControlByQuery(query: TeacherBranchQuery): Promise<Control[]> {
+        return await this.controlRepository.find(query);
     }
 
     async createControl(createControlDto: CreateControlDto): Promise<any> {
@@ -53,10 +53,7 @@ export class ControlService {
         return res;
     }
 
-    async updateControl(
-        id: number,
-        updateControlDto: CreateControlDto,
-    ): Promise<UpdateResult> {
+    async updateControl(id: number, updateControlDto: CreateControlDto): Promise<UpdateResult> {
         let control = new Control();
         control.setControl(updateControlDto);
         return await this.controlRepository.update(id, control);

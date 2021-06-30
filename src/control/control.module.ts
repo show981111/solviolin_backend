@@ -9,5 +9,6 @@ import { ControlService } from './control.service';
     imports: [TypeOrmModule.forFeature([Control]), UserModule],
     controllers: [ControlController],
     providers: [ControlService],
+    exports: [ControlService],
 })
 export class ControlModule {}

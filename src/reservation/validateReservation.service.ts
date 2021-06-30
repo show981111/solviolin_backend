@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    PreconditionFailedException,
+} from '@nestjs/common';
 import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TermService } from 'src/term/term.service';
@@ -14,7 +19,6 @@ export class ValidateReservationSerivce {
 
     protected async isCancelAvailable(userID: string): Promise<Boolean> {
         const termList: Term[] = await this.termService.getTerm();
-        console.log(termList[0]);
         const res = await this.reservationRepository
             .createQueryBuilder()
             .leftJoin('Reservation.user', 'user')
@@ -26,7 +30,6 @@ export class ValidateReservationSerivce {
             })
             .andWhere('endDate <= :termEnd', { termEnd: termList[0].termEnd })
             .getMany();
-        console.log(res);
         //if result is [], then user does not cancel any class in current term
         //which means cancel is possible
         if (res?.length == 0 || res?.length < res[0]?.user?.userCredit) {
@@ -48,7 +51,6 @@ export class ValidateReservationSerivce {
         makeUpStartDate = new Date(makeUpStartDate);
         makeUpEndDate = new Date(makeUpEndDate);
         for (var i = 0; i < res.length; i++) {
-            console.log(res[i]);
             if (res[i].teacherID !== teacherID || res[i].branchName !== branchName)
                 throw new BadRequestException(
                     'teacher and branch is not matched with regualr schedule',
@@ -68,13 +70,8 @@ export class ValidateReservationSerivce {
         throw new BadRequestException('TimeLine is Not Matched');
     }
 
-    protected async isMakeUpAvailable(
-        userID: string,
-        makeUpStartDate: Date,
-        makeUpEndDate: Date,
-    ): Promise<boolean> {
+    protected async isMakeUpAvailable(userID: string, courseDuration: number): Promise<boolean> {
         const termList: Term[] = await this.termService.getTerm();
-
         const res = await this.reservationRepository
             .createQueryBuilder()
             .where('FK_RESERVATION_userID = :userID', { userID: userID })
@@ -82,8 +79,8 @@ export class ValidateReservationSerivce {
                 `(bookingStatus = 2 OR bookingStatus = -2 OR bookingStatus = 1 OR 
                   (extendedMin != 0 AND bookingStatus = 3) )`,
             )
-            .andWhere('startDate <= :startDate', { startDate: termList[1].termStart })
-            .andWhere('endDate >= :endDate', { endDate: termList[0].termEnd })
+            .andWhere(':termStartDate <= startDate', { termStartDate: termList[1].termStart })
+            .andWhere(':termEndDate >= endDate', { termEndDate: termList[0].termEnd })
             .getMany();
         var total: number = 0;
         for (var i = 0; i < res?.length; i++) {
@@ -100,8 +97,27 @@ export class ValidateReservationSerivce {
                 }
             }
         }
-        var courseDuration = (makeUpEndDate.valueOf() - makeUpStartDate.valueOf()) / 60000;
         if (total - courseDuration >= 0) return true;
+        else throw new BadRequestException('MakeUpCourse is not available');
+    }
+
+    protected async isTimeLineConflict(
+        startDate: Date,
+        endDate: Date,
+        teacher: string,
+        id?: number,
+    ): Promise<boolean> {
+        const res = await this.reservationRepository
+            .createQueryBuilder()
+            .where('FK_RESERVATION_teacherID = :teacher', { teacher: teacher })
+            .andWhere('(bookingStatus != 2 OR bookingStatus != -2)')
+            .andWhere(
+                `( (startDate <= :startDate AND :startDate < endDate) OR (startDate < :endDate AND :endDate <= endDate) )`,
+                { startDate: startDate, endDate: endDate },
+            )
+            .andWhere('id != :id', { id: id ? id : -1 })
+            .getOne();
+        if (res) throw new ConflictException('timeslot was already occupied');
         else return false;
     }
 }

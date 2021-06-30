@@ -10,7 +10,7 @@ import {
     UseFilters,
     UseGuards,
 } from '@nestjs/common';
-import { QueryTeacherBranchDto } from 'src/utils/query-teacher-branch.dto';
+import { TeacherBranchDto } from 'src/utils/Teacher-Branch.dto';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { ControlService } from './control.service';
@@ -21,8 +21,8 @@ import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 export class ControlController {
     constructor(private readonly controlService: ControlService) {}
     @Get()
-    getControl(@Query() query: QueryTeacherBranchDto) {
-        return this.controlService.getControlByQuery(query);
+    getControl(@Query() query: TeacherBranchDto) {
+        return this.controlService.getControlByQuery(query.getQuery);
     }
     //close 면 기존 예약된거 다 취소~
     @Post()
@@ -39,10 +39,7 @@ export class ControlController {
 
     @Put('/:id')
     @UseGuards(JwtAdminGuard)
-    updateControl(
-        @Param('id') id: number,
-        @Body() updateControlDto: CreateControlDto,
-    ) {
+    updateControl(@Param('id') id: number, @Body() updateControlDto: CreateControlDto) {
         return this.controlService.updateControl(id, updateControlDto);
     }
 }

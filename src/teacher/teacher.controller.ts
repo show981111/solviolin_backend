@@ -12,7 +12,7 @@ import {
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
-import { QueryTeacherBranchDto } from '../utils/query-teacher-branch.dto';
+import { TeacherBranchDto } from '../utils/Teacher-Branch.dto';
 import { TeacherService } from './teacher.service';
 
 @Controller('teacher')
@@ -38,13 +38,13 @@ export class TeacherController {
 
     @Delete()
     @UseGuards(JwtAdminGuard)
-    removeByQuery(@Query() queryTeacherDto: QueryTeacherBranchDto) {
-        return this.teacherService.removeByQuery(queryTeacherDto);
+    removeByQuery(@Query() queryTeacherDto: TeacherBranchDto) {
+        return this.teacherService.removeByQuery(queryTeacherDto.getQuery);
         // return `${teacherID} AND ${branch}`;
     }
 
     @Get('/search') //teacherID or Branch
-    serachTeacher(@Query() queryTeacherDto: QueryTeacherBranchDto) {
-        return this.teacherService.search(queryTeacherDto);
+    serachTeacher(@Query() queryTeacherDto: TeacherBranchDto) {
+        return this.teacherService.search(queryTeacherDto.getQuery);
     }
 }

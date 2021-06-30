@@ -1,4 +1,5 @@
 import { Branch } from 'src/entities/branch.entity';
+import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 import { User } from './user.entity';
@@ -59,4 +60,14 @@ export class Reservation {
 
     @Column({ name: 'FK_RESERVATION_branch' })
     branchName: string;
+
+    setReservation(createReservationDto: CreateReservationDto, userID: string, status: number) {
+        this.branchName = createReservationDto.branchName;
+        this.teacherID = createReservationDto.teacherID;
+        this.startDate = createReservationDto.startDate;
+        this.endDate = createReservationDto.endDate;
+        this.bookingStatus = status;
+        this.isOriginal = 0;
+        this.userID = userID;
+    }
 }
