@@ -1,17 +1,7 @@
-import {
-    ArgumentsHost,
-    Catch,
-    ExceptionFilter,
-    HttpStatus,
-    Logger,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from '@nestjs/common';
 
 import { Request, Response } from 'express';
-import {
-    QueryFailedError,
-    EntityNotFoundError,
-    CannotCreateEntityIdMapError,
-} from 'typeorm';
+import { QueryFailedError, EntityNotFoundError, CannotCreateEntityIdMapError } from 'typeorm';
 
 @Catch(QueryFailedError, EntityNotFoundError, CannotCreateEntityIdMapError)
 export class TypeOrmExceptionFilter implements ExceptionFilter {
@@ -25,11 +15,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
         let status = HttpStatus.UNPROCESSABLE_ENTITY;
         var sqlErrorCode, sqlMessage;
 
-        Logger.error(
-            message,
-            (exception as any).stack,
-            `${request.method} ${request.url}`,
-        );
+        Logger.error(message, (exception as any).stack, `${request.method} ${request.url}`);
 
         switch (exception.constructor) {
             case QueryFailedError: // this is a TypeOrm error
@@ -41,11 +27,14 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
                     if (request.url === '/user') message = 'invalid branchName';
                 } else if (sqlErrorCode === 1062) {
                     status = 409;
-                    if (request.url === '/user')
-                        message = 'userID or userPhone already exist';
+                    if (request.url === '/user') message = 'userID or userPhone already exist';
+                } else if (sqlErrorCode === 4025) {
+                    status = 400;
+                    message = 'endDate should be after startDate';
                 }
                 break;
             case EntityNotFoundError: // this is another TypeOrm error
+                status = 404;
                 message = (exception as EntityNotFoundError).message;
                 break;
             case CannotCreateEntityIdMapError: // and another

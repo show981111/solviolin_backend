@@ -6,7 +6,7 @@ import {
     MethodNotAllowedException,
 } from '@nestjs/common';
 import { Reservation } from 'src/entities/reservation.entity';
-import { ReservationService } from '../reservation.service';
+import { ReservationService } from '../services/reservation.service';
 
 @Injectable()
 export class IdToEntityTransform implements PipeTransform {

@@ -1,6 +1,7 @@
 import { Branch } from 'src/entities/branch.entity';
 import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { RegularSchedule } from './regularSchedule.entity';
 import { TeacherID } from './teacherID.entity';
 import { User } from './user.entity';
 
@@ -25,12 +26,9 @@ export class Reservation {
     @Column({ type: 'int', width: 11, nullable: false, default: 0 })
     extendedMin: number;
 
-    @Column({ type: 'tinyint', nullable: false, default: 1 })
-    isOriginal: number;
-
     /** USER */
     @ManyToOne((type) => User, (User) => User.userID, {
-        onDelete: 'CASCADE',
+        onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
     })
     @JoinColumn({ name: 'FK_RESERVATION_userID' })
@@ -41,7 +39,7 @@ export class Reservation {
 
     /** TEACHERID */
     @ManyToOne((type) => TeacherID, (TeacherID) => TeacherID.teacherID, {
-        onDelete: 'CASCADE',
+        onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
     })
     @JoinColumn({ name: 'FK_RESERVATION_teacherID' })
@@ -52,7 +50,7 @@ export class Reservation {
 
     /** BRANCH */
     @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
-        onDelete: 'CASCADE',
+        onDelete: 'NO ACTION',
         onUpdate: 'CASCADE',
     })
     @JoinColumn({ name: 'FK_RESERVATION_branch' })
@@ -61,13 +59,33 @@ export class Reservation {
     @Column({ name: 'FK_RESERVATION_branch' })
     branchName: string;
 
-    setReservation(createReservationDto: CreateReservationDto, userID: string, status: number) {
+    /** REGULARSCHEDULE */
+    @ManyToOne((type) => RegularSchedule, (RegularSchedule) => RegularSchedule.id, {
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
+    @JoinColumn({ name: 'FK_RESERVATION_regularID' })
+    regular: RegularSchedule;
+
+    @Column({ name: 'FK_RESERVATION_regularID' })
+    regularID: number;
+
+    setReservation(
+        createReservationDto: CreateReservationDto,
+        userID: string,
+        status: number,
+        regularID?: number,
+    ) {
         this.branchName = createReservationDto.branchName;
         this.teacherID = createReservationDto.teacherID;
         this.startDate = createReservationDto.startDate;
         this.endDate = createReservationDto.endDate;
         this.bookingStatus = status;
-        this.isOriginal = 0;
         this.userID = userID;
+        if (regularID) this.regularID = regularID;
+    }
+
+    toString(): string {
+        return JSON.stringify(this, null, 4);
     }
 }

@@ -18,7 +18,10 @@ export class ValidateReservationTime implements PipeTransform {
         private readonly controlService: ControlService,
     ) {}
     async transform(input: any, metadata: ArgumentMetadata) {
-        if (new Date(input.startDate.getTime() - 4 * 60000) < new Date()) {
+        if (
+            new Date(input.startDate.getTime() - 4 * 60000) <
+            new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
+        ) {
             throw new BadRequestException('reservation is possible until before 4 hour');
         }
         const query: TeacherBranchQuery = {

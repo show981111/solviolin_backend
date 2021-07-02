@@ -19,6 +19,9 @@ import { Term } from './entities/term.entity';
 import { TermModule } from './term/term.module';
 import { RegularSchedule } from './entities/regularSchedule.entity';
 import { RegularScheduleModule } from './regular-schedule/regular-schedule.module';
+import { BranchController } from './branch/branch.controller';
+import { BranchService } from './branch/branch.service';
+import { BranchModule } from './branch/branch.module';
 
 @Module({
     imports: [
@@ -55,6 +58,7 @@ import { RegularScheduleModule } from './regular-schedule/regular-schedule.modul
         ReservationModule,
         TermModule,
         RegularScheduleModule,
+        BranchModule,
     ],
     controllers: [AppController],
     providers: [AppService],

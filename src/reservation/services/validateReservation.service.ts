@@ -1,13 +1,14 @@
 import {
     BadRequestException,
     ConflictException,
+    ForbiddenException,
     Injectable,
-    PreconditionFailedException,
 } from '@nestjs/common';
 import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TermService } from 'src/term/term.service';
-import { ReservationRepository } from './reservation.repository';
+import { Brackets } from 'typeorm';
+import { ReservationRepository } from '../reservation.repository';
 
 @Injectable()
 export class ValidateReservationSerivce {
@@ -17,8 +18,13 @@ export class ValidateReservationSerivce {
         protected readonly regularScheduleService: RegularScheduleService,
     ) {}
 
-    protected async isCancelAvailable(userID: string): Promise<Boolean> {
+    protected async isCancelAvailable(userID: string, cancelStartDate: Date): Promise<Boolean> {
         const termList: Term[] = await this.termService.getTerm();
+        if (!(termList[0].termStart <= cancelStartDate && cancelStartDate <= termList[0].termEnd)) {
+            throw new ForbiddenException(
+                'cannot cancel course from other terms besides current term',
+            );
+        }
         const res = await this.reservationRepository
             .createQueryBuilder()
             .leftJoin('Reservation.user', 'user')
@@ -55,9 +61,10 @@ export class ValidateReservationSerivce {
                 throw new BadRequestException(
                     'teacher and branch is not matched with regualr schedule',
                 );
+            var startTimeNumber = new Date('1998-11-11' + res[i].startTime).getUTCHours();
             if (
-                (res[i].startDate.getUTCHours() < 16 && makeUpStartDate.getHours() < 16) ||
-                (res[i].startDate.getUTCHours() >= 16 && makeUpStartDate.getHours() >= 16)
+                (startTimeNumber < 16 && makeUpStartDate.getHours() < 16) ||
+                (startTimeNumber >= 16 && makeUpStartDate.getHours() >= 16)
             ) {
                 if (
                     (makeUpEndDate.valueOf() - makeUpStartDate.valueOf()) / 60000 ===
@@ -70,8 +77,18 @@ export class ValidateReservationSerivce {
         throw new BadRequestException('TimeLine is Not Matched');
     }
 
-    protected async isMakeUpAvailable(userID: string, courseDuration: number): Promise<boolean> {
+    protected async isMakeUpAvailable(
+        userID: string,
+        courseDuration: number,
+        startDate?: Date,
+        endDate?: Date,
+    ): Promise<boolean> {
         const termList: Term[] = await this.termService.getTerm();
+        if (startDate && endDate) {
+            if (!(termList[0].termStart <= startDate && endDate <= termList[0].termEnd)) {
+                throw new BadRequestException('only possible to reserve course from this term');
+            }
+        }
         const res = await this.reservationRepository
             .createQueryBuilder()
             .where('FK_RESERVATION_userID = :userID', { userID: userID })
@@ -90,10 +107,10 @@ export class ValidateReservationSerivce {
             } else if (res[i].bookingStatus === 1) {
                 total -= diff;
             } else {
-                if (res[i].isOriginal === 1) {
+                if (res[i].regularID) {
                     total -= res[i].extendedMin;
                 } else {
-                    total -= diff;
+                    total -= diff; // if regular is null, then not a original
                 }
             }
         }
@@ -102,22 +119,32 @@ export class ValidateReservationSerivce {
     }
 
     protected async isTimeLineConflict(
-        startDate: Date,
-        endDate: Date,
+        startDate: Date[],
+        endDate: Date[],
         teacher: string,
         id?: number,
     ): Promise<boolean> {
+        var dateOrCondition = new Brackets((qb) => {
+            for (var i = 0; i < startDate.length; i++) {
+                qb = qb.orWhere(
+                    `( (startDate <= '${startDate[i].toISOString()}' 
+                    AND '${startDate[i].toISOString()}' < endDate) 
+                    OR 
+                    (startDate < '${endDate[i].toISOString()}' 
+                    AND '${endDate[i].toISOString()}' <= endDate) )`,
+                );
+            }
+        });
         const res = await this.reservationRepository
             .createQueryBuilder()
             .where('FK_RESERVATION_teacherID = :teacher', { teacher: teacher })
-            .andWhere('(bookingStatus != 2 OR bookingStatus != -2)')
-            .andWhere(
-                `( (startDate <= :startDate AND :startDate < endDate) OR (startDate < :endDate AND :endDate <= endDate) )`,
-                { startDate: startDate, endDate: endDate },
-            )
+            .andWhere('(bookingStatus != 2 AND bookingStatus != -2)')
+            .andWhere(dateOrCondition)
             .andWhere('id != :id', { id: id ? id : -1 })
             .getOne();
-        if (res) throw new ConflictException('timeslot was already occupied');
+
+        if (res)
+            throw new ConflictException('timeslot was already occupied by \n' + res.toString());
         else return false;
     }
 }

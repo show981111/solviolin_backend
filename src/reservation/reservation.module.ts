@@ -6,7 +6,8 @@ import { RegularScheduleModule } from 'src/regular-schedule/regular-schedule.mod
 import { TeacherModule } from 'src/teacher/teacher.module';
 import { TermModule } from 'src/term/term.module';
 import { ReservationController } from './reservation.controller';
-import { ReservationService } from './reservation.service';
+import { RegularReservationService } from './services/regular-reservation.service';
+import { ReservationService } from './services/reservation.service';
 
 @Module({
     imports: [
@@ -17,6 +18,6 @@ import { ReservationService } from './reservation.service';
         TeacherModule,
     ],
     controllers: [ReservationController],
-    providers: [ReservationService],
+    providers: [ReservationService, RegularReservationService],
 })
 export class ReservationModule {}

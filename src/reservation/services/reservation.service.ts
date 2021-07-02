@@ -4,8 +4,8 @@ import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TermService } from 'src/term/term.service';
 import { InsertResult, UpdateResult } from 'typeorm';
-import { CreateReservationDto } from './dto/create-reservation.dto';
-import { ReservationRepository } from './reservation.repository';
+import { CreateReservationDto } from '../dto/create-reservation.dto';
+import { ReservationRepository } from '../reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
 
 @Injectable()
@@ -28,8 +28,12 @@ export class ReservationService extends ValidateReservationSerivce {
         return await this.reservationRepository.findOne(id);
     }
 
-    async cancelCourseByUser(id: number, userID: string): Promise<UpdateResult> {
-        const res = await this.isCancelAvailable(userID);
+    async cancelCourseByUser(
+        id: number,
+        userID: string,
+        cancelStartDate: Date,
+    ): Promise<UpdateResult> {
+        const res = await this.isCancelAvailable(userID, cancelStartDate);
         if (res) {
             return await this.reservationRepository.update(
                 { id: id, userID: userID },
@@ -56,10 +60,15 @@ export class ReservationService extends ValidateReservationSerivce {
                 createReservationDto.teacherID,
                 createReservationDto.branchName,
             ),
-            this.isMakeUpAvailable(userID, courseDuration),
-            this.isTimeLineConflict(
+            this.isMakeUpAvailable(
+                userID,
+                courseDuration,
                 createReservationDto.startDate,
                 createReservationDto.endDate,
+            ),
+            this.isTimeLineConflict(
+                [createReservationDto.startDate],
+                [createReservationDto.endDate],
                 createReservationDto.teacherID,
             ),
         ]);
@@ -74,8 +83,8 @@ export class ReservationService extends ValidateReservationSerivce {
     ): Promise<InsertResult> {
         if (!createReservationDto.userID) throw new BadRequestException('userID should be defined');
         const isConflict = await this.isTimeLineConflict(
-            createReservationDto.startDate,
-            createReservationDto.endDate,
+            [createReservationDto.startDate],
+            [createReservationDto.endDate],
             createReservationDto.teacherID,
         );
         let makeUpCourse = new Reservation();
@@ -89,8 +98,8 @@ export class ReservationService extends ValidateReservationSerivce {
         const [isExtendAvailable, isTimeLineConflict] = await Promise.all([
             this.isMakeUpAvailable(userID, 15),
             this.isTimeLineConflict(
-                courseInfo.startDate,
-                courseInfo.endDate,
+                [courseInfo.startDate],
+                [courseInfo.endDate],
                 courseInfo.teacherID,
                 courseInfo.id,
             ),
@@ -104,8 +113,8 @@ export class ReservationService extends ValidateReservationSerivce {
 
     async extendCourseByAdmin(courseInfo: Reservation, count: number): Promise<UpdateResult> {
         const isTimeLineConflict = await this.isTimeLineConflict(
-            courseInfo.startDate,
-            courseInfo.endDate,
+            [courseInfo.startDate],
+            [courseInfo.endDate],
             courseInfo.teacherID,
             courseInfo.id,
         );
