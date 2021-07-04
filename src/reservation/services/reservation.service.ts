@@ -3,8 +3,9 @@ import { Reservation } from 'src/entities/reservation.entity';
 import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TermService } from 'src/term/term.service';
-import { InsertResult, UpdateResult } from 'typeorm';
+import { In, InsertResult, LessThanOrEqual, MoreThanOrEqual, UpdateResult } from 'typeorm';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
+import { ReservationQuery } from '../dto/reservation-query.dto';
 import { ReservationRepository } from '../reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
 
@@ -125,5 +126,9 @@ export class ReservationService extends ValidateReservationSerivce {
             endDate: courseInfo.endDate,
             extendedMin: courseInfo.extendedMin + 15,
         });
+    }
+
+    async getReservationByQuery(query: ReservationQuery): Promise<Reservation[]> {
+        return this.reservationRepository.find(query.getQuery);
     }
 }

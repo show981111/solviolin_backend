@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -18,11 +14,8 @@ export class AuthService {
 
     async validateUser(userID: string, userPassword: string): Promise<any> {
         const user = await this.usersService.getUserByID(userID);
-        const hashedPassword = await bcrypt.hash(
-            String(userPassword),
-            user.salt,
-        );
-        if (user && user.userPassword === hashedPassword) {
+        const hashedPassword = await bcrypt.hash(String(userPassword), user.salt);
+        if (user && user.userPassword === hashedPassword && user.status === 1) {
             const { userPassword, salt, ...result } = user;
             return result;
         }
@@ -43,10 +36,7 @@ export class AuthService {
         });
     }
 
-    async issueAccessTokenFromRefresh(
-        userID: string,
-        refreshToken: string,
-    ): Promise<any> {
+    async issueAccessTokenFromRefresh(userID: string, refreshToken: string): Promise<any> {
         const user = await this.usersService.getUserByID(userID);
         var sub = 'user';
         if (user?.userType === 2) sub = 'admin';
@@ -76,10 +66,7 @@ export class AuthService {
             expiresIn: `${this.jwtConfigSerivce.refresh_expiration}`,
             subject: sub,
         });
-        const updateRes = await this.updateRefreshToken(
-            user.userID,
-            newRefreshToken,
-        );
+        const updateRes = await this.updateRefreshToken(user.userID, newRefreshToken);
         return {
             ...result,
             access_token: this.issueAccessToken(payload, sub),

@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InsertResult } from 'typeorm';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
+import { SearchUserDto } from './dto/search-user-query.dto';
 
 @Injectable()
 export class UserService {
@@ -12,10 +14,7 @@ export class UserService {
     async create(createUserDto: CreateUserDto): Promise<InsertResult> {
         const user = new User();
         const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(
-            createUserDto.userPassword,
-            salt,
-        );
+        const hashedPassword = await bcrypt.hash(createUserDto.userPassword, salt);
         user.setUser(createUserDto, hashedPassword, salt);
         const res = await this.usersRepository.insert(user);
         return res;
@@ -31,20 +30,28 @@ export class UserService {
         return user;
     }
 
-    async remove(id: string): Promise<void> {
-        await this.usersRepository.delete(id);
+    async remove(id: string): Promise<DeleteResult> {
+        return await this.usersRepository.delete(id);
     }
 
-    async updateRefreshToken(userID: string, refreshToken: string) {
+    async updateRefreshToken(userID: string, refreshToken: string): Promise<UpdateResult> {
         return this.usersRepository.update(userID, {
             refreshToken: refreshToken,
         });
     }
 
-    async getUserByTypeAndBranch(userType: number, branchName: string) {
+    async getUserByTypeAndBranch(userType: number, branchName: string): Promise<User[]> {
         return this.usersRepository.find({
             userType: userType,
             branchName: branchName,
         });
+    }
+
+    async updateInfo(userID: string, updateUserDto: UpdateUserDto): Promise<UpdateResult> {
+        return this.usersRepository.update(userID, updateUserDto.getBody());
+    }
+
+    async searchUser(searchUserDto: SearchUserDto): Promise<User[]> {
+        return this.usersRepository.find(searchUserDto);
     }
 }

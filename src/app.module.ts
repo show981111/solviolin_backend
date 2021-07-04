@@ -22,6 +22,8 @@ import { RegularScheduleModule } from './regular-schedule/regular-schedule.modul
 import { BranchController } from './branch/branch.controller';
 import { BranchService } from './branch/branch.service';
 import { BranchModule } from './branch/branch.module';
+import { Verification } from './entities/verification.entity';
+import { VerificationModule } from './verification/verification.module';
 
 @Module({
     imports: [
@@ -43,6 +45,7 @@ import { BranchModule } from './branch/branch.module';
                     Reservation,
                     Term,
                     RegularSchedule,
+                    Verification,
                 ],
                 // synchronize: true,
                 charset: 'utf8mb4_unicode_ci',
@@ -59,6 +62,7 @@ import { BranchModule } from './branch/branch.module';
         TermModule,
         RegularScheduleModule,
         BranchModule,
+        VerificationModule,
     ],
     controllers: [AppController],
     providers: [AppService],

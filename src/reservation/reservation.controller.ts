@@ -10,6 +10,8 @@ import {
     UseInterceptors,
     UsePipes,
     ForbiddenException,
+    Get,
+    Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
@@ -21,6 +23,7 @@ import { DeleteResultChecker } from 'src/utils/interceptors/deleteResultChecker.
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { ReservationQuery } from './dto/reservation-query.dto';
 import { UpdateEndRegularDto } from './dto/update-end-regular.dto';
 import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
 import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
@@ -39,7 +42,7 @@ export class ReservationController {
      * 1. 취소 : 1.이번달 취소한 수업 < 유저 크레딧
      * 2. 보강 잡기 : 1.해당 시간대 수업가능한지 체크(선생시간대와 비교) 2.다른수업과 안겹치나 3.취소한 수업 있나
      * 3. 연장
-     * 4. 예약가능 시간 보여주기
+     *
      */
     @Patch('/user/cancel/:id')
     @UseGuards(JwtAuthGuard)
@@ -106,6 +109,11 @@ export class ReservationController {
         @Param('count') count: number,
     ): Promise<UpdateResult> {
         return this.reservationService.extendCourseByAdmin(courseInfo, count);
+    }
+
+    @Get()
+    searchCourses(@Query() query: ReservationQuery): Promise<Reservation[]> {
+        return this.reservationService.getReservationByQuery(query);
     }
 
     /**
