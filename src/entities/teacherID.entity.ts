@@ -18,10 +18,7 @@ export class TeacherID {
     @OneToMany((type) => Reservation, (Reservation) => Reservation.teacher)
     reservations: Reservation[];
 
-    @OneToMany(
-        (type) => RegularSchedule,
-        (RegularSchedule) => RegularSchedule.teacher,
-    )
+    @OneToMany((type) => RegularSchedule, (RegularSchedule) => RegularSchedule.teacher)
     regularSchedules: RegularSchedule[];
 
     constructor(teacherID: string) {

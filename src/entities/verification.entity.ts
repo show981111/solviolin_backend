@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 @Entity('VERIFICATION')
 export class Verification {
     @PrimaryColumn('varchar', { length: 45 })
-    id: number;
+    userID: string;
 
     @Column('varchar', { length: 250 })
     code: string;

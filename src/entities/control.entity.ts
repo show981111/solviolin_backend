@@ -1,21 +1,12 @@
 import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { Branch } from 'src/entities/branch.entity';
-import {
-    Column,
-    Entity,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    JoinColumn,
-    Index,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 
 @Entity('CONTROL')
-@Index(
-    'unique_row',
-    ['controlStart', 'controlEnd', 'teacherID', 'branchName', 'status'],
-    { unique: true },
-)
+@Index('unique_row', ['controlStart', 'controlEnd', 'teacherID', 'branchName', 'status'], {
+    unique: true,
+})
 export class Control {
     @PrimaryGeneratedColumn('increment')
     id: number;

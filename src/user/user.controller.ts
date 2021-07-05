@@ -31,11 +31,6 @@ export class UserController {
         return this.userService.create(userData);
     }
 
-    @Patch('/reset/:userID')
-    resetPassword() {
-        return 'check verification table -> verified -> reset Password';
-    }
-
     @Patch('/:userID')
     @UseGuards(JwtAdminGuard)
     @UseInterceptors(UpdateResultChecker)

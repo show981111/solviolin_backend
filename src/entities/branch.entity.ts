@@ -22,10 +22,7 @@ export class Branch {
     @OneToMany((type) => Reservation, (Reservation) => Reservation.branch)
     reservations: Reservation[];
 
-    @OneToMany(
-        (type) => RegularSchedule,
-        (RegularSchedule) => RegularSchedule.branch,
-    )
+    @OneToMany((type) => RegularSchedule, (RegularSchedule) => RegularSchedule.branch)
     regularSchedules: RegularSchedule[];
 
     constructor(branch: string) {

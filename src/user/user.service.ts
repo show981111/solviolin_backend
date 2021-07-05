@@ -20,6 +20,17 @@ export class UserService {
         return res;
     }
 
+    async updatePassword(userID: string, userPassword: string): Promise<UpdateResult> {
+        const user = new User();
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(userPassword, salt);
+        user.userID = userID;
+        return await this.usersRepository.update(
+            { userID: userID },
+            { salt: salt, userPassword: hashedPassword },
+        );
+    }
+
     findAll(): Promise<User[]> {
         return this.usersRepository.find();
     }
