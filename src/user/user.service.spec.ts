@@ -21,7 +21,6 @@ describe('UserService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            // imports: [TypeOrmModule.forFeature([User])],
             providers: [
                 UserRepository,
                 UserService,
@@ -42,6 +41,7 @@ describe('UserService', () => {
 
     it('findAll', () => {
         const res = service.findAll();
+        console.log(res);
         expect(res).toBeDefined();
     });
 });
