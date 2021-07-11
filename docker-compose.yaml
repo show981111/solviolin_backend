@@ -47,7 +47,9 @@ services:
             - /usr/src/app/node_modules
         restart: unless-stopped
     jenkins:
-        build: .
+        build:
+            context: .
+            dockerfile: ./jenkins/Dockerfile
         image: jenkins/jenkins
         restart: always
         container_name: jenkins
