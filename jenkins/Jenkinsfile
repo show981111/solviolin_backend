@@ -1,7 +1,10 @@
 pipeline {
     agent none
     //기본적으로 체크아웃을 하지 않는 옵션
-    options { skipDefaultCheckout(true) }
+    options { 
+        skipDefaultCheckout(true)
+        timeout(time: 180, unit: 'SECONDS') 
+    }
     stages {
         stage('Checkout repository') {
             agent any
@@ -17,7 +20,6 @@ pipeline {
             }
             steps {
                 sh 'npm install'
-                sh 'npm run build'
             }
         }
         stage('Docker build') {
