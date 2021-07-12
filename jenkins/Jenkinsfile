@@ -25,8 +25,7 @@ pipeline {
         stage('Docker build') {
             agent any
             steps {
-                sh 'docker-compose build'
-                sh 'docker-compose up -d proxy dev'
+                sh 'sudo docker-compose up --build -d proxy dev'
             }
         }
     }
