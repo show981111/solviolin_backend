@@ -3,7 +3,7 @@ pipeline {
     //기본적으로 체크아웃을 하지 않는 옵션
     options { 
         skipDefaultCheckout(true)
-        timeout(time: 300, unit: 'SECONDS') 
+        timeout(time: 600, unit: 'SECONDS') 
     }
     stages {
         stage('Checkout repository') {
@@ -25,7 +25,7 @@ pipeline {
         stage('Docker build') {
             agent any
             steps {
-                sh 'docker-compose up --build -d proxy dev'
+                sh 'docker-compose up -d proxy dev'
             }
         }
     }
