@@ -1,3 +1,4 @@
 .dockerignore
 node_modules
+jenkins_home
 node_modules/*
