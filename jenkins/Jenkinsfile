@@ -16,7 +16,7 @@ pipeline {
             agent any
             steps {
                 sh 'docker-compose  -v'
-                sh 'docker-compose up -d proxy dev'
+                sh 'docker-compose up -d dev'
             }
         }
     }
