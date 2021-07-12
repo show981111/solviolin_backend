@@ -12,16 +12,6 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:12.19.0-alpine3.9'
-                }
-            }
-            steps {
-                sh 'npm install'
-            }
-        }
         stage('Docker build') {
             agent any
             steps {

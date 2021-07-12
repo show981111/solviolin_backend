@@ -53,7 +53,7 @@ services:
         image: jenkins/jenkins
         restart: always
         container_name: jenkins
-        user: root
+        user: ubuntu
         ports:
             - 8080:8080
         volumes:
