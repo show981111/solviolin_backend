@@ -3,7 +3,7 @@ pipeline {
     //기본적으로 체크아웃을 하지 않는 옵션
     options { 
         skipDefaultCheckout(true)
-        timeout(time: 600, unit: 'SECONDS') 
+        timeout(time: 1800, unit: 'SECONDS') 
     }
     stages {
         stage('Checkout repository') {
