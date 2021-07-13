@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
@@ -8,15 +9,19 @@ import { User } from './user.entity';
 @Entity('RESERVATION')
 export class Reservation {
     @PrimaryGeneratedColumn('increment')
+    @ApiProperty()
     id: number;
 
     @Column({ type: 'datetime', nullable: false })
+    @ApiProperty()
     startDate: Date;
 
     @Column({ type: 'datetime', nullable: false })
+    @ApiProperty()
     endDate: Date;
 
     @Column({ type: 'tinyint', nullable: false, default: 0 })
+    @ApiProperty()
     bookingStatus: number;
     /**
      * 1 : userMakeUpBook 2 : userCancel 3 : userExtend
@@ -24,6 +29,7 @@ export class Reservation {
      */
 
     @Column({ type: 'int', width: 11, nullable: false, default: 0 })
+    @ApiProperty()
     extendedMin: number;
 
     /** USER */
@@ -35,6 +41,7 @@ export class Reservation {
     user: User;
 
     @Column({ name: 'FK_RESERVATION_userID' })
+    @ApiProperty()
     userID: string;
 
     /** TEACHERID */
@@ -46,6 +53,7 @@ export class Reservation {
     teacher: TeacherID;
 
     @Column({ name: 'FK_RESERVATION_teacherID' })
+    @ApiProperty()
     teacherID: string;
 
     /** BRANCH */
@@ -57,6 +65,7 @@ export class Reservation {
     branch: Branch;
 
     @Column({ name: 'FK_RESERVATION_branch' })
+    @ApiProperty()
     branchName: string;
 
     /** REGULARSCHEDULE */
@@ -68,6 +77,7 @@ export class Reservation {
     regular: RegularSchedule;
 
     @Column({ name: 'FK_RESERVATION_regularID' })
+    @ApiProperty()
     regularID: number;
 
     setReservation(

@@ -10,20 +10,10 @@ import { JwtConfigModule } from 'src/config/jwt/configuration.module';
 import { JwtConfigService } from 'src/config/jwt/configuration.service';
 import { JwtRefreshStategy } from 'src/auth/strategies/jwt-refresh.strategy';
 import { JwtAdminStrategy } from './strategies/jwt-admin.strategy';
+import { UserRepository } from 'src/user/user.repository';
 @Module({
-    imports: [
-        JwtConfigModule,
-        UserModule,
-        PassportModule,
-        JwtModule.register({}),
-    ],
-    providers: [
-        AuthService,
-        LocalStrategy,
-        JwtStrategy,
-        JwtRefreshStategy,
-        JwtAdminStrategy,
-    ],
+    imports: [JwtConfigModule, UserModule, PassportModule, JwtModule.register({})],
+    providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStategy, JwtAdminStrategy],
     controllers: [AuthController],
 })
 export class AuthModule {}

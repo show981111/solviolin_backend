@@ -3,17 +3,21 @@ import { InsertResult, UpdateResult } from 'typeorm';
 import { VerificationService } from './verification.service';
 import { UpdateVerificationDto } from './dto/update-verification.dto';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 @Controller('verification')
 @UseFilters(TypeOrmExceptionFilter)
+@ApiTags('Verification API')
 export class VerificationController {
     constructor(private readonly verificationService: VerificationService) {}
 
     @Post('/sms/:userID') // Post verification Code
+    @ApiOperation({ summary: 'send verification code to the user' })
     getVerificationCode(@Param('userID') userID: string) {
         return this.verificationService.sendSMS(userID);
     }
 
     @Patch()
+    @ApiOperation({ summary: 'verify user' })
     verifyUser(@Body() updateVerificationDto: UpdateVerificationDto): Promise<UpdateResult> {
         return this.verificationService.verifiyUser(
             updateVerificationDto.userID,
@@ -22,6 +26,7 @@ export class VerificationController {
     }
 
     @Patch('/reset')
+    @ApiOperation({ summary: 'reset password by user' })
     resetPassword(@Body() updateVerificationDto: UpdateVerificationDto): Promise<UpdateResult> {
         return this.verificationService.resetPassword(
             updateVerificationDto.userID,

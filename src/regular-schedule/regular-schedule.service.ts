@@ -14,7 +14,7 @@ import { RegularScheduleRepository } from './regular-schedule.repository';
 export class RegularScheduleService {
     constructor(private readonly regularScheduleRepository: RegularScheduleRepository) {}
 
-    async getRegularSechduleByUser(userID: string, criterion: Date): Promise<any> {
+    async getRegularSechduleByUser(userID: string, criterion: Date): Promise<RegularSchedule[]> {
         const res = await this.regularScheduleRepository
             .createQueryBuilder()
             .innerJoin('RegularSchedule.user', 'user')

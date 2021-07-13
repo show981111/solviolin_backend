@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Branch } from 'src/entities/branch.entity';
 import { TeacherID } from 'src/entities/teacherID.entity';
@@ -7,11 +8,13 @@ export class TeacherBranchDto {
     @IsString()
     @IsOptional()
     @IsNotEmpty()
+    @ApiProperty({ required: false })
     readonly teacherID?: string;
 
     @IsString()
     @IsOptional()
     @IsNotEmpty()
+    @ApiProperty({ required: false })
     readonly branchName?: string;
 
     get getQuery(): TeacherBranchQuery {

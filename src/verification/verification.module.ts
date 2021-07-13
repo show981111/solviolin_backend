@@ -4,10 +4,15 @@ import { NaverSensConfigModule } from 'src/config/naver-sens/configuration.modul
 import { Verification } from 'src/entities/verification.entity';
 import { UserModule } from 'src/user/user.module';
 import { VerificationController } from './verification.controller';
+import { VerificationRepository } from './verification.repository';
 import { VerificationService } from './verification.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Verification]), NaverSensConfigModule, UserModule],
+    imports: [
+        TypeOrmModule.forFeature([VerificationRepository]),
+        NaverSensConfigModule,
+        UserModule,
+    ],
     controllers: [VerificationController],
     providers: [VerificationService],
 })

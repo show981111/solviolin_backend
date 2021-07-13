@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { Branch } from 'src/entities/branch.entity';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
@@ -9,12 +10,15 @@ import { TeacherID } from './teacherID.entity';
 })
 export class Control {
     @PrimaryGeneratedColumn('increment')
+    @ApiProperty()
     id: number;
 
     @Column({ type: 'datetime', nullable: false })
+    @ApiProperty()
     controlStart: Date;
 
     @Column({ type: 'datetime', nullable: false })
+    @ApiProperty()
     controlEnd: Date;
 
     @ManyToOne((type) => TeacherID, (TeacherID) => TeacherID.teacherID, {
@@ -25,6 +29,7 @@ export class Control {
     teacher: TeacherID;
 
     @Column({ name: 'FK_CONTROL_teacherID' })
+    @ApiProperty()
     teacherID: string;
 
     @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
@@ -35,9 +40,11 @@ export class Control {
     branch: Branch;
 
     @Column({ name: 'FK_CONTROL_branch' })
+    @ApiProperty()
     branchName: string;
 
     @Column({ type: 'tinyint', nullable: false })
+    @ApiProperty({ description: '0 is open, 1 is closed' })
     status: number;
 
     setControl(createControlDto: CreateControlDto): void {

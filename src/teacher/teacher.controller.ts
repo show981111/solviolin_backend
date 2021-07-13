@@ -14,9 +14,22 @@ import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filte
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { TeacherBranchDto } from '../utils/Teacher-Branch.dto';
 import { TeacherService } from './teacher.service';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiCreatedResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { Teacher } from 'src/entities/teacher.entity';
 
 @Controller('teacher')
 @UseFilters(new TypeOrmExceptionFilter())
+@ApiTags('Teacher API')
 export class TeacherController {
     constructor(private teacherService: TeacherService) {}
     /**
@@ -26,25 +39,44 @@ export class TeacherController {
      */
     @Post()
     @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiBody({ type: CreateTeacherDto })
+    @ApiCreatedResponse()
+    @ApiUnauthorizedResponse()
+    @ApiOperation({ summary: '선생님 스케쥴 등록' })
     create(@Body() teacherData: CreateTeacherDto) {
         return this.teacherService.create(teacherData);
     }
 
     @Delete('/:id')
     @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiParam({ name: 'id', description: 'id to delete' })
+    @ApiOkResponse()
+    @ApiUnauthorizedResponse()
+    @ApiOperation({ summary: '선생님 스케쥴 삭제' })
     removeById(@Param('id') id: number) {
         return this.teacherService.removeById(id);
     }
 
     @Delete()
     @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiQuery({
+        type: TeacherBranchDto,
+    })
+    @ApiOkResponse()
+    @ApiUnauthorizedResponse()
+    @ApiOperation({ summary: '선생님 스케쥴 삭제(쿼리 사용)' })
     removeByQuery(@Query() queryTeacherDto: TeacherBranchDto) {
         return this.teacherService.removeByQuery(queryTeacherDto.getQuery);
-        // return `${teacherID} AND ${branch}`;
     }
 
     @Get('/search') //teacherID or Branch
-    serachTeacher(@Query() queryTeacherDto: TeacherBranchDto) {
+    @ApiQuery({ description: 'search option', type: TeacherBranchDto })
+    @ApiOkResponse({ type: [Teacher] })
+    @ApiOperation({ summary: '선생님 스케쥴 검색' })
+    serachTeacher(@Query() queryTeacherDto: TeacherBranchDto): Promise<Teacher[]> {
         return this.teacherService.search(queryTeacherDto.getQuery);
     }
 }

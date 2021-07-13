@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/entities/user.entity';
 import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Control } from './control.entity';
@@ -8,6 +9,7 @@ import { Teacher } from './teacher.entity';
 @Entity('BRANCH')
 export class Branch {
     @PrimaryColumn('varchar', { length: 10, nullable: false })
+    @ApiProperty()
     branchName: string;
 
     @OneToMany((type) => User, (User) => User.branch)

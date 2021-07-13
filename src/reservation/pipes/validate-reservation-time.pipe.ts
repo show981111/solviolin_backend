@@ -62,7 +62,7 @@ export class ValidateReservationTime implements PipeTransform {
                 endDate <= res[i].controlEnd &&
                 res[i].status === 1
             ) {
-                throw new BadRequestException('timeslot is closed');
+                throw new PreconditionFailedException('timeslot is closed');
             } else if (
                 res[i].controlStart <= startDate &&
                 endDate <= res[i].controlEnd &&

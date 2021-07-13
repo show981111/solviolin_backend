@@ -6,12 +6,13 @@ import { RegularScheduleModule } from 'src/regular-schedule/regular-schedule.mod
 import { TeacherModule } from 'src/teacher/teacher.module';
 import { TermModule } from 'src/term/term.module';
 import { ReservationController } from './reservation.controller';
+import { ReservationRepository } from './reservation.repository';
 import { RegularReservationService } from './services/regular-reservation.service';
 import { ReservationService } from './services/reservation.service';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Reservation]),
+        TypeOrmModule.forFeature([ReservationRepository]),
         TermModule,
         RegularScheduleModule,
         ControlModule,

@@ -1,17 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateTeacherDto } from 'src/teacher/dto/create-teacher.dto';
-import {
-    Column,
-    Entity,
-    PrimaryGeneratedColumn,
-    ManyToOne,
-    JoinColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 
 @Entity('TEACHER')
 export class Teacher {
     @PrimaryGeneratedColumn('increment')
+    @ApiProperty()
     id: number;
 
     @ManyToOne((type) => TeacherID, (TeacherID) => TeacherID.teacherID, {
@@ -22,6 +18,7 @@ export class Teacher {
     teacher: TeacherID;
 
     @Column({ name: 'FK_TEACHER_teacherID' })
+    @ApiProperty()
     teacherID: string;
 
     @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
@@ -32,15 +29,19 @@ export class Teacher {
     branch: Branch;
 
     @Column({ name: 'FK_TEACHER_branch' })
+    @ApiProperty()
     branchName: string;
 
     @Column({ type: 'tinyint', nullable: false })
+    @ApiProperty()
     workDow: number;
 
     @Column({ type: 'time', nullable: false })
+    @ApiProperty()
     startTime: Date;
 
     @Column({ type: 'time', nullable: false })
+    @ApiProperty()
     endTime: Date;
 
     setTeacher(createTeacherDto: CreateTeacherDto): void {

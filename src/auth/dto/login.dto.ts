@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateVerificationDto {
+export class LoginDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
@@ -10,5 +10,5 @@ export class UpdateVerificationDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
-    readonly input: string;
+    readonly userPassword: string;
 }

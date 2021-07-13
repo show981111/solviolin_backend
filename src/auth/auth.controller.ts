@@ -1,41 +1,67 @@
+import { string } from '@hapi/joi';
+import { Controller, Post, UseGuards, Request, Get, UseFilters, Body } from '@nestjs/common';
 import {
-    Controller,
-    Post,
-    UseGuards,
-    Request,
-    Get,
-    BadRequestException,
-    InternalServerErrorException,
-    Body,
-    UnauthorizedException,
-    UseFilters,
-} from '@nestjs/common';
+    ApiBearerAuth,
+    ApiBody,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { User } from 'src/entities/user.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refersh.dto';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 @UseFilters(new TypeOrmExceptionFilter())
+@ApiTags('Auth API')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @UseGuards(LocalAuthGuard)
     @Post('/login')
-    async login(@Request() req) {
+    @ApiOperation({
+        summary: '아이디 패스워드를 통한 로그인',
+        description: '로그인 한 후 유저 정보와 access/refresh token 발급',
+    })
+    @ApiBody({
+        description: 'userID and userPassword',
+        type: LoginDto,
+    })
+    @ApiOkResponse({ description: '유저 정보 반환(유저 정보 + access/refresh token)', type: User })
+    @ApiUnauthorizedResponse({ description: '아이디 패스워드 틀림' })
+    @ApiNotFoundResponse({ description: '유저 존재하지 않음' })
+    async login(@Body() loginDto: LoginDto, @Request() req) {
         return await this.authService.login(req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get('/profile')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'login using JWT' })
+    @ApiOkResponse({ description: '유저 정보 반환(유저 정보 + access/refresh token)', type: User })
+    @ApiUnauthorizedResponse({ description: 'token is invalid' })
+    @ApiNotFoundResponse({ description: '유저 존재하지 않음' })
     getProfile(@Request() req) {
         return this.authService.getUserProfile(req?.user?.userID);
     }
 
     @UseGuards(JwtRefreshGuard)
     @Post('/refresh')
-    getRefreshToken(@Request() req) {
+    @ApiBody({
+        description: 'refreshToken',
+        type: RefreshDto,
+    })
+    @ApiOperation({ summary: 'get new access token using refresh token' })
+    @ApiOkResponse({ description: 'issue new accesstoken' })
+    @ApiUnauthorizedResponse({ description: 'token is invalid' })
+    getRefreshToken(@Body() refreshToken: RefreshDto, @Request() req) {
         return req.user;
     }
 }
