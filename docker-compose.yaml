@@ -46,26 +46,26 @@ services:
             - .:/usr/src/app
             - /usr/src/app/node_modules
         restart: unless-stopped
-    jenkins:
-        build:
-            context: .
-            dockerfile: ./jenkins/Dockerfile
-        image: jenkins/jenkins
-        restart: always
-        container_name: jenkins
-        user: root
-        environment:
-            - JENKINS_OPTS="--prefix=/jenkins"
-        ports:
-            - 8080:8080
-        expose:
-            - '8080'
-        networks:
-            - nestjs-network
-        volumes:
-            - ./jenkins_home:/var/jenkins_home
-            - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-            TZ: 'Asia/Seoul'
+    # jenkins:
+    #     build:
+    #         context: .
+    #         dockerfile: ./jenkins/Dockerfile
+    #     image: jenkins/jenkins
+    #     restart: always
+    #     container_name: jenkins
+    #     user: root
+    #     environment:
+    #         - JENKINS_OPTS="--prefix=/jenkins"
+    #     ports:
+    #         - 8080:8080
+    #     expose:
+    #         - '8080'
+    #     networks:
+    #         - nestjs-network
+    #     volumes:
+    #         - ./jenkins_home:/var/jenkins_home
+    #         - /var/run/docker.sock:/var/run/docker.sock
+    #     environment:
+    #         TZ: 'Asia/Seoul'
 networks:
     nestjs-network:
