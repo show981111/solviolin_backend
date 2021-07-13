@@ -18,7 +18,7 @@ services:
             context: .
             target: development
             dockerfile: ./Dockerfile
-        command: node dist/src/main
+        command: npm run start:dev #node dist/src/main
         # ports:
         #     - 3000:3000
         expose:
