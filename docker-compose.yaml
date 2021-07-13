@@ -18,7 +18,7 @@ services:
             context: .
             target: development
             dockerfile: ./Dockerfile
-        command: node dist/src/main #node dist/src/main
+        command: node dist/src/main #node dist/src/main #n
         # ports:
         #     - 3000:3000
         expose:
@@ -36,7 +36,7 @@ services:
             context: .
             target: production
             dockerfile: ./Dockerfile
-        command: npm run start:prod
+        command: npm run start:dev
         ports:
             - 3000:3000
             - 9229:9229
