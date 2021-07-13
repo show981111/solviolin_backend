@@ -15,17 +15,17 @@ async function bootstrap() {
             transform: true, // param 에 적은 타입으로 변환해줌.
         }),
     );
-    app.use(helmet({ contentSecurityPolicy: false }));
+    // app.use(helmet({ contentSecurityPolicy: false }));
 
-    app.enableCors({
-        origin: [/^(.*)/],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        preflightContinue: false,
-        credentials: true,
-        optionsSuccessStatus: 204,
-        allowedHeaders:
-            'Origin,X-Requested-With,Content-Type,Accept,Authorization,authorization,X-Forwarded-for',
-    });
+    // app.enableCors({
+    //     origin: [/^(.*)/],
+    //     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    //     preflightContinue: false,
+    //     credentials: true,
+    //     optionsSuccessStatus: 204,
+    //     allowedHeaders:
+    //         'Origin,X-Requested-With,Content-Type,Accept,Authorization,authorization,X-Forwarded-for',
+    // });
 
     setupSwagger(app);
 
