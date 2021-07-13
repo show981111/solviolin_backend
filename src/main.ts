@@ -15,10 +15,11 @@ async function bootstrap() {
             transform: true, // param 에 적은 타입으로 변환해줌.
         }),
     );
-    app.use(helmet());
-    app.enableCors();
 
     setupSwagger(app);
+
+    app.use(helmet());
+    app.enableCors();
 
     await app.listen(3000);
 }
