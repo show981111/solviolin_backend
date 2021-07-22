@@ -67,7 +67,8 @@ export class UserService {
         for (var i = 0; i < users.length; i++) {
             users[i].userPassword = undefined;
             users[i].salt = undefined;
+            users[i].refreshToken = undefined;
         }
-        return this.usersRepository.find(searchUserDto);
+        return users;
     }
 }

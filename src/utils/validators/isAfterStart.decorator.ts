@@ -27,7 +27,7 @@ export class IsAfterStartConstraint implements ValidatorConstraintInterface {
         const copyRelatedVal = new Date(relatedValue.valueOf());
         copyVal.setHours(0, 0, 0, 0);
         copyRelatedVal.setHours(0, 0, 0, 0);
-        return value > relatedValue && copyVal === copyRelatedVal;
+        return value > relatedValue && copyVal.valueOf() === copyRelatedVal.valueOf();
     }
 
     defaultMessage(args: ValidationArguments) {

@@ -6,24 +6,16 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MariaDBConfigService } from './config/database/mariadb/configuration.service';
 import { MariaDBConfigModule } from './config/database/mariadb/configuration.module';
-import { Branch } from './entities/branch.entity';
-import { User } from './entities/user.entity';
 import { TeacherModule } from './teacher/teacher.module';
-import { Control } from './entities/control.entity';
-import { Teacher } from './entities/teacher.entity';
-import { TeacherID } from './entities/teacherID.entity';
 import { ControlModule } from './control/control.module';
 import { ReservationModule } from './reservation/reservation.module';
-import { Reservation } from './entities/reservation.entity';
-import { Term } from './entities/term.entity';
 import { TermModule } from './term/term.module';
-import { RegularSchedule } from './entities/regularSchedule.entity';
 import { RegularScheduleModule } from './regular-schedule/regular-schedule.module';
-import { BranchController } from './branch/branch.controller';
-import { BranchService } from './branch/branch.service';
 import { BranchModule } from './branch/branch.module';
-import { Verification } from './entities/verification.entity';
 import { VerificationModule } from './verification/verification.module';
+import { CheckInService } from './check-in/check-in.service';
+import { CheckInController } from './check-in/check-in.controller';
+import { CheckInModule } from './check-in/check-in.module';
 
 @Module({
     imports: [
@@ -37,19 +29,6 @@ import { VerificationModule } from './verification/verification.module';
                 username: MariaDBConfigService.username,
                 password: MariaDBConfigService.password,
                 entities: [__dirname + '/entities/*.entity.{js,ts}'],
-                // entities: [
-
-                //     User,
-                //     Branch,
-                //     Control,
-                //     Teacher,
-                //     TeacherID,
-                //     Reservation,
-                //     Term,
-                //     RegularSchedule,
-                //     Verification,
-                // ],
-                // synchronize: true,
                 charset: 'utf8mb4_unicode_ci',
                 logging: ['query', 'error'],
                 timezone: '+00:00',
@@ -65,6 +44,7 @@ import { VerificationModule } from './verification/verification.module';
         RegularScheduleModule,
         BranchModule,
         VerificationModule,
+        CheckInModule,
     ],
     controllers: [AppController],
     providers: [AppService],

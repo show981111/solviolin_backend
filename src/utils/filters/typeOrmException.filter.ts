@@ -23,11 +23,19 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
                 message = sqlMessage;
                 sqlErrorCode = (exception as any).errno;
                 if (sqlErrorCode === 1452) {
+                    // foreign key constraint fails
                     status = 400;
-                    if (request.url === '/user') message = 'invalid branchName';
+                    if (message.indexOf('branchName') !== -1) {
+                        message = 'invalid branchName';
+                    } else if (message.indexOf('userID') !== -1) {
+                        message = 'user does not exist';
+                    }
                 } else if (sqlErrorCode === 1062) {
+                    // conflict
                     status = 409;
-                    if (request.url === '/user') message = 'userID or userPhone already exist';
+                    if (message.indexOf('user') !== -1) {
+                        message = 'userID or userPhone already exist';
+                    }
                 } else if (sqlErrorCode === 4025) {
                     status = 400;
                     message = 'endDate should be after startDate';

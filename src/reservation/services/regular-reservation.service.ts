@@ -1,11 +1,20 @@
-import { BadRequestException, Injectable, MethodNotAllowedException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    MethodNotAllowedException,
+    PreconditionFailedException,
+} from '@nestjs/common';
+import { Branch } from 'src/entities/branch.entity';
 import { RegularSchedule } from 'src/entities/regularSchedule.entity';
 import { Reservation } from 'src/entities/reservation.entity';
+import { TeacherID } from 'src/entities/teacherID.entity';
 import { Term } from 'src/entities/term.entity';
 import { CreateRegularDto } from 'src/regular-schedule/dto/create-regular.dto';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
+import { TeacherService } from 'src/teacher/teacher.service';
 import { CreateTermDto } from 'src/term/dto/create-term.dto';
 import { TermService } from 'src/term/term.service';
+import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
 import {
     DeleteResult,
     FindConditions,
@@ -24,11 +33,25 @@ export class RegularReservationService extends ValidateReservationSerivce {
         protected readonly reservationRepository: ReservationRepository,
         protected readonly termService: TermService,
         protected readonly regularScheduleService: RegularScheduleService,
+        protected readonly teacherService: TeacherService,
     ) {
         super(reservationRepository, termService, regularScheduleService);
     }
 
     async registerRegularAndReservation(createRegularDto: CreateRegularDto): Promise<InsertResult> {
+        const query: TeacherBranchQuery = {
+            branch: new Branch(createRegularDto.branchName),
+            teacher: new TeacherID(createRegularDto.teacherID),
+        };
+        const teacherInfo = await this.teacherService.getWorkSlot(
+            query,
+            createRegularDto.startDate,
+            createRegularDto.endDate,
+        );
+        if (!teacherInfo)
+            throw new PreconditionFailedException(
+                'timeslot is not available(Teacher is not working at the time)',
+            );
         const termList = await this.termService.getTerm(createRegularDto.startDate);
         const termEnd = termList[0].termEnd;
         const termID = termList[0].id;

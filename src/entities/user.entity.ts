@@ -3,6 +3,7 @@ import { BranchRepository } from 'src/branch/branch.repository';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { Column, Entity, ManyToOne, PrimaryColumn, JoinColumn, OneToMany } from 'typeorm';
+import { CheckIn } from './check-in.entity';
 import { RegularSchedule } from './regularSchedule.entity';
 import { Reservation } from './reservation.entity';
 
@@ -17,6 +18,9 @@ export class User {
 
     @OneToMany((type) => RegularSchedule, (RegularSchedule) => RegularSchedule.user)
     regularSchedules: RegularSchedule[];
+
+    @OneToMany((type) => CheckIn, (CheckIn) => CheckIn.user)
+    checkIns: CheckIn[];
 
     @Column({ nullable: false })
     userPassword: string;

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { User } from 'src/entities/user.entity';
-import { IsValidPhoneNumber } from 'src/utils/decorators/validate-phone.decorator';
+import { IsValidPhoneNumber } from 'src/utils/validators/validate-phone.decorator';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 export class UpdateUserDto {

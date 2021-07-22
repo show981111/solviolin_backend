@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsDateString, IsIn, IsInt, IsString } from 'class-validator';
-import { IsAfterStart } from 'src/utils/decorators/isAfterStart.decorator';
+import { IsAfterStart } from 'src/utils/validators/isAfterStart.decorator';
 
 export class CreateControlDto {
     @IsString()
