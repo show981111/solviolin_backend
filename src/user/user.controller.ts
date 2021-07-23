@@ -60,7 +60,7 @@ export class UserController {
     @ApiOkResponse({ description: 'user updated' })
     @ApiConflictResponse({ description: 'userID or phoneNumber already exist' })
     @ApiUnauthorizedResponse({ description: 'not admin or tokin is invalid' })
-    update(@Param('userID') userID, updateUserDto: UpdateUserDto): Promise<UpdateResult> {
+    update(@Param('userID') userID, @Body() updateUserDto: UpdateUserDto): Promise<UpdateResult> {
         return this.userService.updateInfo(userID, updateUserDto);
     }
 

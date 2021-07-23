@@ -65,7 +65,7 @@ export class UpdateUserDto {
     readonly token: string;
 
     getBody(): QueryDeepPartialEntity<User> {
-        let body: QueryDeepPartialEntity<User>;
+        let body: QueryDeepPartialEntity<User> = {};
         if (this.userName) body.userName = this.userName;
         if (this.userPhone) body.userPhone = this.userPhone;
         if (this.userDuration) body.userDuration = this.userDuration;
@@ -77,5 +77,19 @@ export class UpdateUserDto {
         if (this.token) body.token = this.token;
 
         return body;
+    }
+
+    isEmpty(): Boolean {
+        return (
+            !this.userName &&
+            !this.userPhone &&
+            !this.userDuration &&
+            !this.userBranch &&
+            !this.totalClassCount &&
+            !this.userCredit &&
+            !this.status &&
+            !this.isPaid &&
+            !this.token
+        );
     }
 }

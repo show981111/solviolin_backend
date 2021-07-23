@@ -8,8 +8,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
  */
 export function setupSwagger(app: INestApplication): void {
     const options = new DocumentBuilder()
-        .setTitle('NestJS Study API Docs')
-        .setDescription('NestJS Study API description')
+        .setTitle('Solviolin NestJS API docs')
+        .setDescription('Solviolin NestJS API description')
         .setVersion('1.0.0')
         .addBearerAuth()
         .build();

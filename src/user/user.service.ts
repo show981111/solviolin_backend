@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -59,6 +59,8 @@ export class UserService {
     }
 
     async updateInfo(userID: string, updateUserDto: UpdateUserDto): Promise<UpdateResult> {
+        console.log(updateUserDto.getBody());
+        if (updateUserDto.isEmpty()) throw new BadRequestException('Empty body');
         return this.usersRepository.update(userID, updateUserDto.getBody());
     }
 
