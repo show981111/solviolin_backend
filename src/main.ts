@@ -3,10 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './utils/set-up-swagger';
 import * as helmet from 'helmet';
+import { HTTPLoggingInterceptor } from './utils/interceptors/HTTPlogging.interceptor';
+import { AllExceptionsFilter } from './utils/filters/AllException.filter';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
+    // app.useGlobalInterceptors(new HTTPLoggingInterceptor());
+    // app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
@@ -14,6 +18,7 @@ async function bootstrap() {
             transform: true, // param 에 적은 타입으로 변환해줌.
         }),
     );
+
     app.use(helmet({ contentSecurityPolicy: false }));
 
     app.enableCors({

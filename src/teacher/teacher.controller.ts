@@ -28,7 +28,7 @@ import {
 import { Teacher } from 'src/entities/teacher.entity';
 
 @Controller('teacher')
-@UseFilters(new TypeOrmExceptionFilter())
+@UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Teacher API')
 export class TeacherController {
     constructor(private teacherService: TeacherService) {}

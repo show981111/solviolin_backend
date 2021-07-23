@@ -1,21 +1,31 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from '@nestjs/common';
+import {
+    ArgumentsHost,
+    Catch,
+    ExceptionFilter,
+    HttpStatus,
+    Inject,
+    Injectable,
+    Logger,
+} from '@nestjs/common';
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { QueryFailedError, EntityNotFoundError, CannotCreateEntityIdMapError } from 'typeorm';
 
+@Injectable()
 @Catch(QueryFailedError, EntityNotFoundError, CannotCreateEntityIdMapError)
 export class TypeOrmExceptionFilter implements ExceptionFilter {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+
     catch(exception: unknown, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
-        const request = ctx.getRequest<Request>();
+        const request = ctx.getRequest();
 
         let message = (exception as any).message.message;
         let code = (exception as any).code;
         let status = HttpStatus.UNPROCESSABLE_ENTITY;
         var sqlErrorCode, sqlMessage;
-
-        Logger.error(message, (exception as any).stack, `${request.method} ${request.url}`);
 
         switch (exception.constructor) {
             case QueryFailedError: // this is a TypeOrm error
@@ -50,6 +60,19 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
                 break;
         }
 
+        if (request?.body?.userPassword) request.body.userPassword = undefined;
+
+        var loggingMessage = `${status} | [${request.method}] ${
+            request.originalUrl
+        } [Body] ${JSON.stringify(request.body)} [Params] ${JSON.stringify(
+            request.params,
+        )} [Query] ${JSON.stringify(
+            request.query,
+        )} [Message] ${message} [SqlMessage] ${sqlMessage} [Code] ${code} [FROM] ${
+            request.user?.userID
+        }`;
+
+        this.logger.error(loggingMessage);
         response.status(status).json({
             statusCode: status,
             message: message,
@@ -57,6 +80,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
             code: code,
             path: request.url,
             method: request.method,
+            timestamp: new Date().toISOString(),
         });
     }
 }

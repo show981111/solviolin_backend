@@ -47,7 +47,7 @@ import { RegularReservationService } from './services/regular-reservation.servic
 import { ReservationService } from './services/reservation.service';
 
 @Controller('reservation')
-@UseFilters(new TypeOrmExceptionFilter())
+@UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Reservation API')
 export class ReservationController {
     constructor(

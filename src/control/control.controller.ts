@@ -17,9 +17,6 @@ import { ControlService } from './control.service';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import {
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
-    ApiOkResponse,
     ApiOperation,
     ApiParam,
     ApiQuery,
@@ -30,7 +27,7 @@ import {
 import { Control } from 'src/entities/control.entity';
 
 @Controller('control')
-@UseFilters(new TypeOrmExceptionFilter())
+@UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Control API')
 export class ControlController {
     constructor(private readonly controlService: ControlService) {}

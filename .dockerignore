@@ -1,4 +1,9 @@
 .dockerignore
 node_modules
-jenkins_home
 node_modules/*
+logs
+dist
+.git
+.gitignore
+docker-compose.yaml
+DockerFile
