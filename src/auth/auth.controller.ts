@@ -13,7 +13,6 @@ import { User } from 'src/entities/user.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { RefreshDto } from './dto/refersh.dto';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -56,12 +55,11 @@ export class AuthController {
     @Post('/refresh')
     @ApiBody({
         description: 'refreshToken',
-        type: RefreshDto,
     })
     @ApiOperation({ summary: 'get new access token using refresh token' })
     @ApiOkResponse({ description: 'issue new accesstoken' })
     @ApiUnauthorizedResponse({ description: 'token is invalid' })
-    getRefreshToken(@Body() refreshToken: RefreshDto, @Request() req) {
+    getRefreshToken(@Request() req) {
         return req.user;
     }
 }
