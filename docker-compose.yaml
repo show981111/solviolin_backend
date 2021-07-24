@@ -18,9 +18,9 @@ services:
             context: .
             target: development
             dockerfile: ./Dockerfile
-        command: node dist/src/main #node dist/src/main #n
-        # ports:
-        #     - 3000:3000
+        command: npm run start:dev #node dist/src/main #n
+        ports:
+            - 3000:3000
         expose:
             - '3000' # 다른 컨테이너에게 3000번 포트 open
         networks:
@@ -36,10 +36,12 @@ services:
             context: .
             target: production
             dockerfile: ./Dockerfile
-        command: npm run start:dev
-        ports:
-            - 3000:3000
-            - 9229:9229
+        command: node dist/main
+        # ports:
+        #     - 3000:3000
+        #     - 9229:9229
+        expose:
+            - '3000' # 다른 컨테이너에게 3000번 포트 open
         networks:
             - nestjs-network
         volumes:
