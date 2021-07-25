@@ -38,7 +38,7 @@ import { DeleteResultChecker } from 'src/utils/interceptors/deleteResultChecker.
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { CreateReservationDto } from './dto/create-reservation.dto';
-import { ReservationQuery } from './dto/reservation-query.dto';
+import { ReservationQueryDto } from './dto/reservation-query.dto';
 import { UpdateEndRegularDto } from './dto/update-end-regular.dto';
 import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
 import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
@@ -184,12 +184,12 @@ export class ReservationController {
         return this.reservationService.extendCourseByAdmin(courseInfo, count);
     }
 
-    @Get()
+    @Post('/search')
     @ApiOkResponse({ type: [Reservation] })
     @ApiOperation({
         summary: '예약된 수업 조회(쿼리 조건 만족하는)',
     })
-    searchCourses(@Query() query: ReservationQuery): Promise<Reservation[]> {
+    searchCourses(@Body() query: ReservationQueryDto): Promise<Reservation[]> {
         return this.reservationService.getReservationByQuery(query);
     }
 

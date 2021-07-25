@@ -1,7 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { FindOperator, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import {
+    IsArray,
+    IsDate,
+    IsInt,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
+import { FindOperator, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
 
 interface searchQuery {
     branchName: string;
@@ -9,9 +17,10 @@ interface searchQuery {
     startDate?: FindOperator<Date>;
     endDate?: FindOperator<Date>;
     userID?: string;
+    bookingStatus: FindOperator<number>;
 }
 
-export class ReservationQuery {
+export class ReservationQueryDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
@@ -42,8 +51,16 @@ export class ReservationQuery {
     @ApiProperty({ required: false })
     readonly userID?: string;
 
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @ApiProperty()
+    readonly bookingStatus: number[];
+
     get getQuery(): searchQuery {
-        var query: searchQuery = { branchName: this.branchName };
+        var query: searchQuery = {
+            branchName: this.branchName,
+            bookingStatus: In(this.bookingStatus),
+        };
 
         if (this.teacherID) query.teacherID = this.teacherID;
         if (this.startDate) query.startDate = MoreThanOrEqual(this.startDate);

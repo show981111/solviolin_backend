@@ -31,6 +31,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 : HttpStatus.INTERNAL_SERVER_ERROR;
 
         if (request?.body?.userPassword) request.body.userPassword = undefined;
+        if (request?.body?.refreshToken) request.body.refreshToken = undefined;
 
         var loggingMessage = `${status} | [${request.method}] ${
             request.originalUrl

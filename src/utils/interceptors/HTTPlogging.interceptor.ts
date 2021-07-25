@@ -26,7 +26,10 @@ export class HTTPLoggingInterceptor implements NestInterceptor {
             tap(() => {
                 const response = context.switchToHttp().getResponse();
                 const delay = Date.now() - now;
+
                 if (request?.body?.userPassword) request.body.userPassword = undefined;
+                if (request?.body?.refreshToken) request.body.refreshToken = undefined;
+
                 var message = `${response.statusCode} | [${method}] ${url} [Body] ${JSON.stringify(
                     request.body,
                 )} [Params] ${JSON.stringify(request.params)} [Query] ${JSON.stringify(

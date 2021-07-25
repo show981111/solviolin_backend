@@ -61,6 +61,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
         }
 
         if (request?.body?.userPassword) request.body.userPassword = undefined;
+        if (request?.body?.refreshToken) request.body.refreshToken = undefined;
 
         var loggingMessage = `${status} | [${request.method}] ${
             request.originalUrl

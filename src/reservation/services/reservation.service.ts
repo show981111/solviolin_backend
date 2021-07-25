@@ -5,7 +5,7 @@ import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.se
 import { TermService } from 'src/term/term.service';
 import { In, InsertResult, LessThanOrEqual, MoreThanOrEqual, UpdateResult } from 'typeorm';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
-import { ReservationQuery } from '../dto/reservation-query.dto';
+import { ReservationQueryDto } from '../dto/reservation-query.dto';
 import { ReservationRepository } from '../reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
 
@@ -128,7 +128,7 @@ export class ReservationService extends ValidateReservationSerivce {
         });
     }
 
-    async getReservationByQuery(query: ReservationQuery): Promise<Reservation[]> {
+    async getReservationByQuery(query: ReservationQueryDto): Promise<Reservation[]> {
         return this.reservationRepository.find(query.getQuery);
     }
 }
