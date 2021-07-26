@@ -25,7 +25,6 @@ export class ControlService {
     ) {}
 
     async getControlByQuery(query: TeacherBranchQuery): Promise<Control[]> {
-        console.log(this.controlRepository);
         return await this.controlRepository.find(query);
     }
 

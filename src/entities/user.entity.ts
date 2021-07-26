@@ -48,14 +48,6 @@ export class User {
     @ApiProperty({})
     branchName: string;
 
-    @Column({ type: 'int', width: 11, nullable: false, default: 0 })
-    @ApiProperty({})
-    userDuration: number;
-
-    @Column({ type: 'int', width: 11, nullable: false, default: 0 })
-    @ApiProperty({})
-    totalClassCount: number;
-
     @Column({ type: 'int', width: 11, nullable: false, default: 2 })
     @ApiProperty({})
     userCredit: number;
@@ -92,8 +84,6 @@ export class User {
         this.userType = CreateUserDto.userType;
         let br = new Branch(CreateUserDto.userBranch);
         this.branch = br;
-        this.userDuration = CreateUserDto.userDuration;
-        this.totalClassCount = CreateUserDto.totalClassCount;
         if (CreateUserDto.token) this.token = CreateUserDto.token;
         this.salt = salt;
     }

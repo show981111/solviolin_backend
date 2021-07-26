@@ -24,20 +24,6 @@ export class UpdateUserDto {
     readonly userBranch: string;
 
     @IsInt()
-    @IsIn([30, 45, 60])
-    @IsOptional()
-    @IsNotEmpty()
-    @ApiProperty({ required: false })
-    readonly userDuration: number;
-
-    @IsInt()
-    @IsIn([4, 8])
-    @IsOptional()
-    @IsNotEmpty()
-    @ApiProperty({ required: false })
-    readonly totalClassCount: number;
-
-    @IsInt()
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
@@ -68,9 +54,7 @@ export class UpdateUserDto {
         let body: QueryDeepPartialEntity<User> = {};
         if (this.userName) body.userName = this.userName;
         if (this.userPhone) body.userPhone = this.userPhone;
-        if (this.userDuration) body.userDuration = this.userDuration;
         if (this.userBranch) body.branchName = this.userBranch;
-        if (this.totalClassCount) body.totalClassCount = this.totalClassCount;
         if (this.userCredit) body.userCredit = this.userCredit;
         if (this.status) body.status = this.status;
         if (this.isPaid) body.isPaid = this.isPaid;
@@ -83,9 +67,7 @@ export class UpdateUserDto {
         return (
             !this.userName &&
             !this.userPhone &&
-            !this.userDuration &&
             !this.userBranch &&
-            !this.totalClassCount &&
             !this.userCredit &&
             !this.status &&
             !this.isPaid &&

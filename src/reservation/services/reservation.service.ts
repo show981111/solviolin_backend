@@ -50,7 +50,7 @@ export class ReservationService extends ValidateReservationSerivce {
         userID: string,
     ): Promise<InsertResult> {
         var courseDuration =
-            (createReservationDto.startDate.valueOf() - createReservationDto.endDate.valueOf()) /
+            (createReservationDto.endDate.valueOf() - createReservationDto.startDate.valueOf()) /
             60000;
 
         const [isTimelineValid, isMakeUpAvailable, isTimeLineConflict] = await Promise.all([

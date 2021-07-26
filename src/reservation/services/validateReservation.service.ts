@@ -56,28 +56,53 @@ export class ValidateReservationSerivce {
         );
         makeUpStartDate = new Date(makeUpStartDate);
         makeUpEndDate = new Date(makeUpEndDate);
+        var dummyStartDateTime = new Date('1998-11-11 ' + res[0].startTime);
+        var dummyEndDateTime = new Date('1998-11-11 ' + res[0].endTime);
+        var classDuration: number =
+            (dummyEndDateTime.valueOf() - dummyStartDateTime.valueOf()) / 60000;
+
+        var isTeachrBranchMatch: boolean = false;
+        var isDurationMatch: boolean = false;
+        var isTimeLineMatch: boolean = false;
+        console.log('class Duration ', classDuration);
         for (var i = 0; i < res.length; i++) {
-            if (res[i].teacherID !== teacherID || res[i].branchName !== branchName)
-                throw new BadRequestException(
-                    'teacher and branch is not matched with regualr schedule',
-                );
-            var startTimeNumber = new Date('1998-11-11' + res[i].startTime).getUTCHours();
+            //should find the regular schedule that contents all conditions.
+            if (isTeachrBranchMatch && isTimeLineMatch && isDurationMatch) return classDuration;
+            else {
+                isTeachrBranchMatch = false;
+                isTimeLineMatch = false;
+                isDurationMatch = false;
+            }
+
+            if (res[i].teacherID === teacherID && res[i].branchName === branchName) {
+                isTeachrBranchMatch = true;
+            }
+
+            var startTimeNumber = new Date('1998-11-11 ' + res[i].startTime).getUTCHours();
             if (
                 (startTimeNumber < 16 && makeUpStartDate.getHours() < 16) ||
                 (startTimeNumber >= 16 && makeUpStartDate.getHours() >= 16)
             ) {
-                if (
-                    (makeUpEndDate.valueOf() - makeUpStartDate.valueOf()) / 60000 ===
-                    res[i].user.userDuration
-                )
-                    return res[i].user.userDuration;
-                else throw new BadRequestException('course duration must match userDuration');
+                isTimeLineMatch = true;
+            }
+
+            if ((makeUpEndDate.valueOf() - makeUpStartDate.valueOf()) / 60000 === classDuration) {
+                isDurationMatch = true;
             }
         }
-        throw new BadRequestException('TimeLine is Not Matched');
+        if (isTeachrBranchMatch && isTimeLineMatch && isDurationMatch) return classDuration;
+
+        if (!isTeachrBranchMatch)
+            throw new BadRequestException(
+                'teacher and branch is not matched with regular schedule',
+            );
+        if (!isTimeLineMatch) throw new BadRequestException('TimeLine is Not Matched');
+        if (!isDurationMatch)
+            throw new BadRequestException('course duration must match userDuration');
     }
 
     protected async isMakeUpAvailable(
+        //총 캔슬된 수업 - 보강 또는 연장한 수업 = 잔여 보강 가능 시간
         userID: string,
         courseDuration: number,
         startDate?: Date,
@@ -114,6 +139,8 @@ export class ValidateReservationSerivce {
                 }
             }
         }
+        console.log(total);
+        console.log(courseDuration);
         if (total - courseDuration >= 0) return true;
         else throw new BadRequestException('MakeUpCourse is not available');
     }

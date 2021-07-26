@@ -29,16 +29,6 @@ export class CreateUserDto {
     @ApiProperty()
     readonly userBranch: string;
 
-    @IsInt()
-    @IsIn([30, 45, 60])
-    @ApiProperty()
-    readonly userDuration: number;
-
-    @IsInt()
-    @IsIn([4, 8])
-    @ApiProperty()
-    readonly totalClassCount: number;
-
     @IsOptional()
     @ApiProperty({ required: false })
     readonly token: string;

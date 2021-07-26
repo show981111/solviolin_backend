@@ -6,7 +6,13 @@ import {
 } from '@nestjs/common';
 import { RegularSchedule } from 'src/entities/regularSchedule.entity';
 import { Term } from 'src/entities/term.entity';
-import { DeleteResult, FindConditions, UpdateResult } from 'typeorm';
+import {
+    DeleteResult,
+    FindConditions,
+    LessThanOrEqual,
+    MoreThanOrEqual,
+    UpdateResult,
+} from 'typeorm';
 import { CreateRegularDto } from './dto/create-regular.dto';
 import { RegularScheduleRepository } from './regular-schedule.repository';
 
@@ -15,16 +21,18 @@ export class RegularScheduleService {
     constructor(private readonly regularScheduleRepository: RegularScheduleRepository) {}
 
     async getRegularSechduleByUser(userID: string, criterion: Date): Promise<RegularSchedule[]> {
-        const res = await this.regularScheduleRepository
-            .createQueryBuilder()
-            .innerJoin('RegularSchedule.user', 'user')
-            .addSelect(['user.userDuration', 'user.totalClassCount'])
-            .where('FK_REGULARSCHEDULE_userID = :userID', { userID: userID })
-            .andWhere('userDuration != 0')
-            .andWhere('startDate <= :startDate', { startDate: criterion })
-            .andWhere('endDate >= :startDate', { startDate: criterion })
-            .getMany();
-
+        // const res = await this.regularScheduleRepository
+        //     .createQueryBuilder()
+        //     .addSelect(`TIMEDIFF(startTime, endTime) as classDuration`)
+        //     .where('FK_REGULARSCHEDULE_userID = :userID', { userID: userID })
+        //     .andWhere('startDate <= :startDate', { startDate: criterion })
+        //     .andWhere('endDate >= :startDate', { startDate: criterion })
+        //     .getMany();
+        const res = await this.regularScheduleRepository.find({
+            userID: userID,
+            startDate: LessThanOrEqual(criterion),
+            endDate: MoreThanOrEqual(criterion),
+        });
         if (res?.length > 0) {
             return res;
         } else throw new NotFoundException('regular schedule not found');
