@@ -5,5 +5,6 @@ logs
 jenkins_home
 .git
 .gitignore
-docker-compose.yaml
 .vscode
+dist
+docker-compose.yaml
