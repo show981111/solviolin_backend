@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsDateString, IsIn, IsInt, IsString } from 'class-validator';
-import { IsAfterStart } from 'src/utils/validators/isAfterStart.decorator';
+import { IsAfterStartTime } from 'src/utils/validators/isAfterStartTime.decorator';
 
 export class CreateControlDto {
     @IsString()
@@ -16,7 +16,7 @@ export class CreateControlDto {
     readonly controlStart: Date;
 
     @IsDateString()
-    @IsAfterStart('controlStart')
+    @IsAfterStartTime('controlStart')
     @ApiProperty({ description: 'must be after controlStart' })
     readonly controlEnd: Date;
 

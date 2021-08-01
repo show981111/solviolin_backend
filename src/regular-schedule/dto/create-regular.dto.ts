@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsString } from 'class-validator';
-import { IsAfterStart } from 'src/utils/validators/isAfterStart.decorator';
+import { IsAfterStartTimeAndSameDate } from 'src/utils/validators/isAfterStartTimeAndSameDate.decorator';
 
 export class CreateRegularDto {
     @IsString()
@@ -20,7 +20,7 @@ export class CreateRegularDto {
     readonly startDate: Date;
 
     @IsDate()
-    @IsAfterStart('startDate')
+    @IsAfterStartTimeAndSameDate('startDate')
     @Type(() => Date)
     @ApiProperty()
     endDate: Date;

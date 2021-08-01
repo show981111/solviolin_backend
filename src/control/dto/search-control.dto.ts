@@ -1,26 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-    IsArray,
-    IsDate,
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-} from 'class-validator';
+import { IsDate, IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { FindOperator, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
 
-interface searchQuery {
+interface searchFilter {
     branchName: string;
     teacherID?: string;
     startDate?: FindOperator<Date>;
     endDate?: FindOperator<Date>;
-    userID?: string;
-    bookingStatus: FindOperator<number>;
+    status?: number;
 }
 
-export class ReservationQueryDto {
+export class ControlFilterDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
@@ -46,27 +37,22 @@ export class ReservationQueryDto {
     @ApiProperty({ required: false })
     readonly endDate?: Date;
 
-    @IsString()
+    @IsInt()
+    @IsIn([0, 1])
     @IsOptional()
-    @ApiProperty({ required: false })
-    readonly userID?: string;
-
-    @IsArray()
-    @IsNumber({}, { each: true })
     @ApiProperty()
-    readonly bookingStatus: number[];
+    @ApiProperty({ required: false })
+    readonly status?: number;
 
-    get getQuery(): searchQuery {
-        var query: searchQuery = {
+    get getFilter(): searchFilter {
+        var filter: searchFilter = {
             branchName: this.branchName,
-            bookingStatus: In(this.bookingStatus),
         };
 
-        if (this.teacherID) query.teacherID = this.teacherID;
-        if (this.startDate) query.startDate = MoreThanOrEqual(this.startDate);
-        if (this.endDate) query.endDate = LessThanOrEqual(this.endDate);
-        if (this.userID) query.userID = this.userID;
-
-        return query;
+        if (this.teacherID) filter.teacherID = this.teacherID;
+        if (this.startDate) filter.startDate = MoreThanOrEqual(this.startDate);
+        if (this.endDate) filter.endDate = LessThanOrEqual(this.endDate);
+        if (this.status === 0 || this.status === 1) filter.status = this.status;
+        return filter;
     }
 }

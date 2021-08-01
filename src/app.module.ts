@@ -85,10 +85,10 @@ import { TypeOrmExceptionFilter } from './utils/filters/typeOrmException.filter'
             provide: APP_INTERCEPTOR,
             useClass: HTTPLoggingInterceptor,
         },
-        {
-            provide: APP_FILTER,
-            useClass: AllExceptionsFilter,
-        },
+        // {
+        //     provide: APP_FILTER,
+        //     useClass: AllExceptionsFilter,
+        // },
         {
             provide: APP_FILTER,
             useClass: TypeOrmExceptionFilter,

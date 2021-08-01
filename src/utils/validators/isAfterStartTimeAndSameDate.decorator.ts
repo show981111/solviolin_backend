@@ -6,7 +6,10 @@ import {
     ValidatorConstraintInterface,
 } from 'class-validator';
 
-export function IsAfterStart(property: string, validationOptions?: ValidationOptions) {
+export function IsAfterStartTimeAndSameDate(
+    property: string,
+    validationOptions?: ValidationOptions,
+) {
     return (object: any, propertyName: string) => {
         registerDecorator({
             target: object.constructor,
@@ -18,7 +21,7 @@ export function IsAfterStart(property: string, validationOptions?: ValidationOpt
     };
 }
 
-@ValidatorConstraint({ name: 'IsAfterStart' })
+@ValidatorConstraint({ name: 'IsAfterStartTimeAndSameDate' })
 export class IsAfterStartConstraint implements ValidatorConstraintInterface {
     validate(value: any, args: ValidationArguments) {
         const [relatedPropertyName] = args.constraints;

@@ -37,8 +37,9 @@ import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filte
 import { DeleteResultChecker } from 'src/utils/interceptors/deleteResultChecker.interceptor';
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
+import { AvailableSpotFilterDto } from './dto/available-spot-filter.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
-import { ReservationQueryDto } from './dto/reservation-query.dto';
+import { ReservationFilterDto } from './dto/reservation-filter.dto';
 import { UpdateEndRegularDto } from './dto/update-end-regular.dto';
 import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
 import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
@@ -58,7 +59,7 @@ export class ReservationController {
      * 1. 취소 : 1.이번달 취소한 수업 < 유저 크레딧
      * 2. 보강 잡기 : 1.해당 시간대 수업가능한지 체크(선생시간대와 비교) 2.다른수업과 안겹치나 3.취소한 수업 있나
      * 3. 연장
-     *
+     * 4. 해당 지점, 선생님, 해당 날짜에 가능한 스팟 show
      */
     @Patch('/user/cancel/:id')
     @UseGuards(JwtAuthGuard)
@@ -189,8 +190,17 @@ export class ReservationController {
     @ApiOperation({
         summary: '예약된 수업 조회(쿼리 조건 만족하는)',
     })
-    searchCourses(@Body() query: ReservationQueryDto): Promise<Reservation[]> {
-        return this.reservationService.getReservationByQuery(query);
+    searchCourses(@Body() filter: ReservationFilterDto): Promise<Reservation[]> {
+        return this.reservationService.getReservationByFilter(filter);
+    }
+
+    @Post('/available') //1. 선생 시간표 받아서 2. open 열고 3. close 닫고 4. 수업있는곳 닫고
+    @ApiOkResponse({ type: [Date] })
+    @ApiOperation({
+        summary: '현재 오픈되어 있는 스팟 제공',
+    })
+    getAvailableSpot(@Body() filter: AvailableSpotFilterDto): Promise<Date[]> {
+        return this.reservationService.getAvailableSpotByFilter(filter);
     }
 
     /**

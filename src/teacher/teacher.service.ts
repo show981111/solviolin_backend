@@ -93,4 +93,16 @@ export class TeacherService {
     async getTeacherByBranch(branchName: string): Promise<Teacher[]> {
         return await this.teacherRepository.find({ branchName: branchName });
     }
+
+    async getWorkSlotAtDate(
+        teacherID: string,
+        branchName: string,
+        dow: number,
+    ): Promise<Teacher[]> {
+        return await this.teacherRepository.find({
+            teacherID: teacherID,
+            branchName: branchName,
+            workDow: dow,
+        });
+    }
 }

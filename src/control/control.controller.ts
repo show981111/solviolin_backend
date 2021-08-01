@@ -25,17 +25,19 @@ import {
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Control } from 'src/entities/control.entity';
+import { ControlFilterDto } from './dto/search-control.dto';
 
 @Controller('control')
 @UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Control API')
 export class ControlController {
     constructor(private readonly controlService: ControlService) {}
-    @Get()
-    @ApiQuery({ type: TeacherBranchDto })
+    @Post('/search')
+    @ApiQuery({ type: ControlFilterDto })
     @ApiResponse({ type: [Control] })
-    getControl(@Query() query: TeacherBranchDto): Promise<Control[]> {
-        return this.controlService.getControlByQuery(query.getQuery);
+    @ApiOperation({ summary: '컨트롤 검색' })
+    getControl(@Body() filter: ControlFilterDto): Promise<Control[]> {
+        return this.controlService.getControlByFilter(filter);
     }
 
     @Post()

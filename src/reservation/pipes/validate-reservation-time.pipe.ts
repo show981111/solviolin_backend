@@ -30,7 +30,7 @@ export class ValidateReservationTime implements PipeTransform {
         };
         const [isTimeAvailableForTeacher, isTimeOpened] = await Promise.all([
             this.isTimeAvailableForTeacher(query, input.startDate, input.endDate),
-            this.isTimeOpened(query, input.startDate, input.endDate),
+            this.isTimeOpened(input.branchName, input.teacherID, input.startDate, input.endDate),
         ]);
 
         if (!isTimeAvailableForTeacher && !isTimeOpened) {
@@ -51,24 +51,27 @@ export class ValidateReservationTime implements PipeTransform {
     }
 
     private async isTimeOpened(
-        query: TeacherBranchQuery,
+        branchName: string,
+        teacherID: string,
         startDate: Date,
         endDate: Date,
     ): Promise<Boolean> {
-        const res = await this.controlService.getControlByQuery(query);
-        for (var i = 0; i < res.length; i++) {
-            if (
-                res[i].controlStart <= startDate &&
-                endDate <= res[i].controlEnd &&
-                res[i].status === 1
-            ) {
+        const overlapRes = await this.controlService.getOverlap(
+            startDate,
+            endDate,
+            teacherID,
+            branchName,
+        );
+        for (var i = 0; i < overlapRes.length; i++) {
+            if (overlapRes[i].status === 1) {
                 throw new PreconditionFailedException('timeslot is closed');
-            } else if (
-                res[i].controlStart <= startDate &&
-                endDate <= res[i].controlEnd &&
-                res[i].status === 0
-            ) {
-                return true;
+            } else {
+                if (
+                    overlapRes[i].controlStart <= startDate &&
+                    endDate <= overlapRes[i].controlEnd
+                ) {
+                    return true;
+                }
             }
         }
         return false; // not closed, not opened

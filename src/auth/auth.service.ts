@@ -74,4 +74,8 @@ export class AuthService {
             refresh_token: newRefreshToken,
         };
     }
+
+    async logOut(userID: string) {
+        return this.usersService.updateRefreshToken(userID, undefined);
+    }
 }

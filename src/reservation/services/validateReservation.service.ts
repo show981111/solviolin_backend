@@ -102,7 +102,7 @@ export class ValidateReservationSerivce {
     }
 
     protected async isMakeUpAvailable(
-        //총 캔슬된 수업 - 보강 또는 연장한 수업 = 잔여 보강 가능 시간
+        // 이번학기 총 캔슬된 수업  - 보강 또는 연장한 수업 = 잔여 보강 가능 시간 +
         userID: string,
         courseDuration: number,
         startDate?: Date,

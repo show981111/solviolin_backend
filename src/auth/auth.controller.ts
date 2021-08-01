@@ -1,5 +1,5 @@
 import { string } from '@hapi/joi';
-import { Controller, Post, UseGuards, Request, Get, UseFilters, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Get, UseFilters, Body, Patch } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -61,5 +61,13 @@ export class AuthController {
     @ApiUnauthorizedResponse({ description: 'token is invalid' })
     getRefreshToken(@Request() req) {
         return req.user;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('/log-out')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'log out using JWT' })
+    logOut(@Request() req) {
+        return this.authService.getUserProfile(req?.user?.userID);
     }
 }
