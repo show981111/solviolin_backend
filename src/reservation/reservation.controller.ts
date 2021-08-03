@@ -10,8 +10,9 @@ import {
     UseInterceptors,
     UsePipes,
     ForbiddenException,
+    Req,
+    BadRequestException,
     Get,
-    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -30,31 +31,25 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
+import { Link } from 'src/entities/link.entity';
 import { Reservation } from 'src/entities/reservation.entity';
-import { CreateRegularDto } from 'src/regular-schedule/dto/create-regular.dto';
-import { CreateTermDto } from 'src/term/dto/create-term.dto';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
-import { DeleteResultChecker } from 'src/utils/interceptors/deleteResultChecker.interceptor';
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
-import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
+import { InsertResult, UpdateResult } from 'typeorm';
 import { AvailableSpotFilterDto } from './dto/available-spot-filter.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { GetChangeListDto } from './dto/get-change-list.dto';
 import { ReservationFilterDto } from './dto/reservation-filter.dto';
-import { UpdateEndRegularDto } from './dto/update-end-regular.dto';
 import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
 import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
 import { ValidateReservationTime } from './pipes/validate-reservation-time.pipe';
-import { RegularReservationService } from './services/regular-reservation.service';
 import { ReservationService } from './services/reservation.service';
 
 @Controller('reservation')
 @UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Reservation API')
 export class ReservationController {
-    constructor(
-        private readonly reservationService: ReservationService,
-        private readonly regularReservationService: RegularReservationService,
-    ) {}
+    constructor(private readonly reservationService: ReservationService) {}
     /**
      * 1. 취소 : 1.이번달 취소한 수업 < 유저 크레딧
      * 2. 보강 잡기 : 1.해당 시간대 수업가능한지 체크(선생시간대와 비교) 2.다른수업과 안겹치나 3.취소한 수업 있나
@@ -63,7 +58,6 @@ export class ReservationController {
      */
     @Patch('/user/cancel/:id')
     @UseGuards(JwtAuthGuard)
-    @UseInterceptors(UpdateResultChecker)
     @ApiBearerAuth()
     @ApiOperation({
         summary: '유저가 수업 취소 : 이번달 취소한 수업 < 유저크레딧 이여야 가능',
@@ -109,13 +103,15 @@ export class ReservationController {
         description:
             '1.해당 시간대 수업가능한지 체크(선생시간대와 비교) 2.다른수업과 안겹치나 3.취소한 수업 있나',
     })
+    @ApiCreatedResponse({ type: [InsertResult], description: '생성.' })
     @ApiPreconditionFailedResponse({ description: 'time slot is closed' })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
     @ApiUnauthorizedResponse()
     reserveMakeUpCourseByUser(
         @Body(ValidateReservationTime) createReservationDto: CreateReservationDto,
+        //예약 시작 4시간 전인지, 해당 시간이 선생한테 오픈되있고 클로즈가 아닌지, 혹은 오픈인지 체크
         @Request() req,
-    ): Promise<InsertResult> {
+    ): Promise<(InsertResult | UpdateResult[])[]> {
         return this.reservationService.reserveMakeUpCourseByUser(
             createReservationDto,
             req?.user?.userID,
@@ -137,13 +133,12 @@ export class ReservationController {
         @Body() createReservationDto: CreateReservationDto,
         @Param('count') count: number,
     ): Promise<InsertResult> {
-        return this.reservationService.reserveMakeUpCourseByAdmin(createReservationDto, count);
+        return this.reservationService.reserveNewClassByAdmin(createReservationDto, count);
     }
 
     @Patch('/user/extend/:id')
     @UseGuards(JwtAuthGuard)
     @UsePipes(IdToEntityTransform, ValidateReservationTime)
-    @UseInterceptors(UpdateResultChecker)
     @ApiBearerAuth()
     @ApiParam({ name: 'id', type: 'string', description: 'id to extend' })
     @ApiOperation({
@@ -156,7 +151,7 @@ export class ReservationController {
     extendCourseByUser(
         @Param('id') courseInfo: Reservation,
         @Request() req,
-    ): Promise<UpdateResult> {
+    ): Promise<(UpdateResult | InsertResult | UpdateResult[])[]> {
         if (courseInfo.userID !== req?.user?.userID)
             throw new ForbiddenException("cannot extend other users' course");
         return this.reservationService.extendCourseByUser(courseInfo, req?.user?.userID);
@@ -203,93 +198,43 @@ export class ReservationController {
         return this.reservationService.getAvailableSpotByFilter(filter);
     }
 
-    /**
-     * 정기예약
-     * 1. 정기예약 잡고 해당 텀에 예약 만듬
-     * 2. 정기예약 엔드데이트 설정 그이후 다 삭제
-     * 3. 정기예약 다음텀까지 연장
-     */
-    @Post('/regular')
-    @UseGuards(JwtAdminGuard)
+    @Post('/changes')
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: '정기예약 등록',
-        description: '레귤러에 등록하고 현재 텀에 예약 등록',
+        summary:
+            '유저가 변경한 내역을 가져온다(관리자가 잡아준 보강이나 관리자가 잡아준 연장은 여기에 안뜸',
     })
-    @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
-    postRegularSchedule(@Body() createRegularDto: CreateRegularDto): Promise<InsertResult> {
-        return this.regularReservationService.registerRegularAndReservation(createRegularDto);
+    @ApiOkResponse({
+        type: [Link],
+        description: 'Link에 추가적으로 from의 Reservation정보, to의 Reservation 정보',
+    })
+    getChangeListByUser(@Body() getChangeListDto: GetChangeListDto, @Req() req): Promise<Link[]> {
+        return this.reservationService.getChangeList(req?.user?.userID, getChangeListDto.range);
     }
 
-    @Patch('/regular/:id')
+    @Post('/admin/changes')
     @UseGuards(JwtAdminGuard)
-    @UseInterceptors(DeleteResultChecker)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: '정기예약 종료 날짜를 업데이트하고 그 이후 수업은 다 삭제한다.',
+        summary:
+            '유저가 변경한 내역을 가져온다(관리자가 잡아준 보강이나 관리자가 잡아준 연장은 여기에 안뜸',
+        description: 'post body에 userID 필수',
     })
-    closeRegularSchedule(
-        @Param('id') id: number,
-        @Body() updateEndRegularDto: UpdateEndRegularDto,
-    ): Promise<DeleteResult> {
-        return this.regularReservationService.closeEndDateAndRemoveReservation(
-            id,
-            updateEndRegularDto,
+    @ApiOkResponse({
+        type: [Link],
+        description: 'Link에 추가적으로 from의 Reservation정보, to의 Reservation 정보도 같이줌',
+    })
+    getChangeListByAdmin(@Body() getChangeListDto: GetChangeListDto): Promise<Link[]> {
+        if (!getChangeListDto.userID) throw new BadRequestException('userID is empty');
+        return this.reservationService.getChangeList(
+            getChangeListDto.userID,
+            getChangeListDto.range,
         );
     }
 
-    @Post('/regular/extend/:branch')
-    @UseGuards(JwtAdminGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: '해당지점의 모든 수업을 다음학기로 연장한다',
-        description: '레귤러스케쥴에 termID가 NULL 인것을 제외한 모든 수업이 연장된다.',
-    })
-    @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
-    extendRegularSchedule(@Param('branch') branchName: string): Promise<InsertResult> {
-        return this.regularReservationService.extendToNextTerm(
-            {
-                branchName: branchName,
-            },
-            false,
-        );
-    }
-
-    @Post('/regular/extend/user/:userID')
-    @UseGuards(JwtAdminGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: '해당지점의 모든 수업을 다음학기로 연장한다',
-        description: '레귤러스케쥴에 termID가 NULL 인것을 제외한 모든 수업이 연장된다',
-    })
-    @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
-    extendRegularScheduleByUser(@Param('userID') userID: string): Promise<DeleteResult> {
-        return this.regularReservationService.extendToNextTerm(
-            {
-                userID: userID,
-            },
-            true,
-        );
-    }
-
-    /**
-     * 텀 업데이트
-     * 1. 기존 텀아이디로 된 얘들 다 커렌트 텀으로 바꿈
-     * 2. 해당 텀에 있는 예약 다 삭제
-     * 3. 텀 업데이트
-     */
-
-    @Patch('/term/:id')
-    @UseGuards(JwtAdminGuard)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: '학기를 수정한다',
-        description:
-            '학기를 잘못입력할 경우 학기를 수정한다. 기존의 학기에 있던 수업들은 삭제된다. 이거 하고나서 다음학기로 연장하면 됨.',
-    })
-    updateTermAndClearReservation(@Param('id') id: number, @Body() createTermDto: CreateTermDto) {
-        createTermDto.termStart.setHours(0, 0, 0, 0);
-        createTermDto.termEnd.setHours(23, 55, 0, 0);
-        return this.regularReservationService.updateTermAndClearReservation(id, createTermDto);
+    @Get('/test')
+    test() {
+        return this.reservationService.isMakeUpAvailable('sleep1', 15);
     }
 }

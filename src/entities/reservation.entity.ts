@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Link } from './link.entity';
 import { RegularSchedule } from './regularSchedule.entity';
 import { TeacherID } from './teacherID.entity';
 import { User } from './user.entity';
@@ -79,6 +80,16 @@ export class Reservation {
     @Column({ name: 'FK_RESERVATION_regularID' })
     @ApiProperty()
     regularID: number;
+
+    @Column({ name: 'isControlled' })
+    @ApiProperty()
+    isControlled: number;
+
+    @OneToMany((type) => Link, (LINK) => LINK.from)
+    linkFrom: Link[];
+
+    @OneToMany((type) => Link, (LINK) => LINK.to)
+    linkTo: Link[];
 
     setReservation(
         createReservationDto: CreateReservationDto,

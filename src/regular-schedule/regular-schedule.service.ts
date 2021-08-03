@@ -29,9 +29,14 @@ export class RegularScheduleService {
         //     .andWhere('endDate >= :startDate', { startDate: criterion })
         //     .getMany();
         const res = await this.regularScheduleRepository.find({
-            userID: userID,
-            startDate: LessThanOrEqual(criterion),
-            endDate: MoreThanOrEqual(criterion),
+            where: {
+                userID: userID,
+                startDate: LessThanOrEqual(criterion),
+                endDate: MoreThanOrEqual(criterion),
+            },
+            order: {
+                startDate: 'DESC',
+            },
         });
         if (res?.length > 0) {
             return res;

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Control } from 'src/entities/control.entity';
-import { ReservationRepository } from 'src/reservation/reservation.repository';
+import { ReservationRepository } from 'src/reservation/repositories/reservation.repository';
 import { UserService } from 'src/user/user.service';
 import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
 import {
@@ -8,6 +8,7 @@ import {
     getManager,
     In,
     InsertResult,
+    LessThan,
     LessThanOrEqual,
     MoreThanOrEqual,
     UpdateResult,
@@ -78,17 +79,8 @@ export class ControlService {
         }
         var res;
         if (createControlDto.status === 1) {
-            res = await getManager().transaction(async (transactionalEntityManager) => {
-                await this.reservationRepository.update(
-                    {
-                        teacherID: In(teachers),
-                        branchName: createControlDto.branchName,
-                        startDate: MoreThanOrEqual(createControlDto.controlStart),
-                        endDate: LessThanOrEqual(createControlDto.controlEnd),
-                    },
-                    { bookingStatus: -2 },
-                );
-                await this.controlRepository
+            await getManager().transaction(async (transactionalEntityManager) => {
+                var insertRes = await this.controlRepository
                     .createQueryBuilder()
                     .insert()
                     .values(controlList)
@@ -97,6 +89,19 @@ export class ControlService {
                         overwrite: ['status'],
                     })
                     .execute();
+                res = insertRes;
+                console.log(insertRes);
+                if (!insertRes?.raw?.insertId) return;
+                await this.reservationRepository.update(
+                    {
+                        teacherID: In(teachers),
+                        branchName: createControlDto.branchName,
+                        startDate: MoreThanOrEqual(createControlDto.controlStart),
+                        endDate: LessThan(createControlDto.controlEnd),
+                        bookingStatus: In([0, 1, -1, 3, -3]),
+                    },
+                    { bookingStatus: -2, isControlled: 1 },
+                );
             });
         } else {
             res = await this.controlRepository
@@ -114,12 +119,34 @@ export class ControlService {
     }
 
     async deleteControl(id: number): Promise<DeleteResult> {
+        const deleteInfo: Control = await this.controlRepository.findOne(id);
+        if (!deleteInfo) throw new NotFoundException('row not found');
+        if (deleteInfo.status === 1) {
+            //해당 구간에 컨트롤되서 캔슬되었던 수업들 다 어드민 북드로 되살림.
+            const rollBackCancelled = await this.reservationRepository.update(
+                {
+                    teacherID: deleteInfo.teacherID,
+                    branchName: deleteInfo.branchName,
+                    startDate: MoreThanOrEqual(deleteInfo.controlStart),
+                    endDate: LessThan(deleteInfo.controlEnd),
+                    bookingStatus: -2,
+                    isControlled: 1,
+                },
+                {
+                    bookingStatus: -1,
+                    isControlled: -1,
+                },
+            );
+        }
         const res = await this.controlRepository.delete(id);
-        if (res.affected < 1) throw new NotFoundException('row not found');
         return res;
     }
 
     async updateControl(id: number, updateControlDto: CreateControlDto): Promise<UpdateResult> {
+        const updateInfo: Control = await this.controlRepository.findOne(id);
+        if (!updateInfo) throw new NotFoundException('row not found');
+        if (updateInfo.status === 1 || updateControlDto.status === 1)
+            throw new BadRequestException('cannot update closed Control(please delete and repost)');
         let control = new Control();
         control.setControl(updateControlDto);
         return await this.controlRepository.update(id, control);

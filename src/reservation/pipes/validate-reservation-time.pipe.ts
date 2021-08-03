@@ -24,12 +24,14 @@ export class ValidateReservationTime implements PipeTransform {
         ) {
             throw new BadRequestException('reservation is possible until before 4 hour');
         }
-        const query: TeacherBranchQuery = {
-            branch: new Branch(input.branchName),
-            teacher: new TeacherID(input.teacherID),
-        };
+
         const [isTimeAvailableForTeacher, isTimeOpened] = await Promise.all([
-            this.isTimeAvailableForTeacher(query, input.startDate, input.endDate),
+            this.isTimeAvailableForTeacher(
+                input.branchName,
+                input.teacherID,
+                input.startDate,
+                input.endDate,
+            ),
             this.isTimeOpened(input.branchName, input.teacherID, input.startDate, input.endDate),
         ]);
 
@@ -41,10 +43,15 @@ export class ValidateReservationTime implements PipeTransform {
     }
 
     private async isTimeAvailableForTeacher(
-        query: TeacherBranchQuery,
+        branchName: string,
+        teacherID: string,
         startDate: Date,
         endDate: Date,
     ): Promise<Boolean> {
+        const query: TeacherBranchQuery = {
+            branch: new Branch(branchName),
+            teacher: new TeacherID(teacherID),
+        };
         const teacherInfo = await this.teacherService.getWorkSlot(query, startDate, endDate);
         if (teacherInfo) return true;
         else return false;

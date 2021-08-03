@@ -25,18 +25,20 @@ import {
     MoreThanOrEqual,
 } from 'typeorm';
 import { UpdateEndRegularDto } from '../dto/update-end-regular.dto';
-import { ReservationRepository } from '../reservation.repository';
+import { LinkRepository } from '../repositories/link.repository';
+import { ReservationRepository } from '../repositories/reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
 
 @Injectable()
 export class RegularReservationService extends ValidateReservationSerivce {
     constructor(
         protected readonly reservationRepository: ReservationRepository,
+        protected readonly linkRepository: LinkRepository,
         protected readonly termService: TermService,
         protected readonly regularScheduleService: RegularScheduleService,
         protected readonly teacherService: TeacherService,
     ) {
-        super(reservationRepository, termService, regularScheduleService);
+        super(reservationRepository, linkRepository, termService, regularScheduleService);
     }
 
     async registerRegularAndReservation(createRegularDto: CreateRegularDto): Promise<InsertResult> {

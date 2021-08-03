@@ -1,28 +1,40 @@
-import { BadRequestException, Inject, Injectable, MethodNotAllowedException } from '@nestjs/common';
+import { link } from '@hapi/joi';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    MethodNotAllowedException,
+} from '@nestjs/common';
 import { ControlRepository } from 'src/control/control.repository';
 import { ControlService } from 'src/control/control.service';
+import { Link } from 'src/entities/link.entity';
 import { Reservation } from 'src/entities/reservation.entity';
 import { Teacher } from 'src/entities/teacher.entity';
+import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TeacherService } from 'src/teacher/teacher.service';
 import { TermService } from 'src/term/term.service';
-import { InsertResult, UpdateResult } from 'typeorm';
+import { getManager, InsertResult, UpdateResult } from 'typeorm';
 import { AvailableSpotFilterDto } from '../dto/available-spot-filter.dto';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { ReservationFilterDto } from '../dto/reservation-filter.dto';
-import { ReservationRepository } from '../reservation.repository';
+import { fromCourseInfo } from '../interfaces/from-course-info.interface';
+import { LinkRepository } from '../repositories/link.repository';
+import { ReservationRepository } from '../repositories/reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
 
 @Injectable()
 export class ReservationService extends ValidateReservationSerivce {
     constructor(
         protected readonly reservationRepository: ReservationRepository,
+        protected readonly linkRepository: LinkRepository,
         protected readonly termService: TermService,
         protected readonly regularScheduleService: RegularScheduleService,
         protected readonly teacherService: TeacherService,
         protected readonly controlService: ControlService,
     ) {
-        super(reservationRepository, termService, regularScheduleService);
+        super(reservationRepository, linkRepository, termService, regularScheduleService);
     }
 
     async cancelCourseByAdmin(id: number): Promise<UpdateResult> {
@@ -54,12 +66,12 @@ export class ReservationService extends ValidateReservationSerivce {
     async reserveMakeUpCourseByUser(
         createReservationDto: CreateReservationDto,
         userID: string,
-    ): Promise<InsertResult> {
+    ): Promise<(InsertResult | UpdateResult[])[]> {
         var courseDuration =
             (createReservationDto.endDate.valueOf() - createReservationDto.startDate.valueOf()) /
             60000;
 
-        const [isTimelineValid, isMakeUpAvailable, isTimeLineConflict] = await Promise.all([
+        const [isTimelineValid, isTimeLineConflict, fromList] = await Promise.all([
             this.checkTimeLine(
                 userID,
                 createReservationDto.startDate,
@@ -67,24 +79,68 @@ export class ReservationService extends ValidateReservationSerivce {
                 createReservationDto.teacherID,
                 createReservationDto.branchName,
             ),
+            this.isTimeLineConflict(
+                [createReservationDto.startDate],
+                [createReservationDto.endDate],
+                createReservationDto.teacherID,
+            ),
             this.isMakeUpAvailable(
                 userID,
                 courseDuration,
                 createReservationDto.startDate,
                 createReservationDto.endDate,
             ),
-            this.isTimeLineConflict(
-                [createReservationDto.startDate],
-                [createReservationDto.endDate],
-                createReservationDto.teacherID,
-            ),
         ]);
-        let makeUpCourse = new Reservation();
-        makeUpCourse.setReservation(createReservationDto, userID, 1);
-        return await this.reservationRepository.insert(makeUpCourse);
+
+        var res = await getManager().transaction(async (transactionalEntityManager) => {
+            let makeUpCourse = new Reservation();
+            makeUpCourse.setReservation(createReservationDto, userID, 1);
+            const makeUpCourseRes = await transactionalEntityManager
+                .getRepository(Reservation)
+                .insert(makeUpCourse);
+            if (!makeUpCourseRes?.raw?.insertId)
+                throw new InternalServerErrorException('insertID is null');
+
+            var insertedLinkList: Link[] = [];
+            var updateLinkList: Link[] = [];
+            for (var i = 0; i < fromList.length; i++) {
+                let link = new Link();
+                link.from = fromList[i].from;
+                link.isPostponed = fromList[i].isFromLast ? 1 : 0;
+                link.used = fromList[i].using;
+                link.toID = makeUpCourseRes.raw.insertId;
+                if (fromList[i].isToNull) {
+                    updateLinkList.push(link);
+                } else {
+                    insertedLinkList.push(link);
+                }
+            }
+            var linkUpdateRes: UpdateResult[] = [];
+            var linkInsertRes: InsertResult;
+            if (updateLinkList.length > 0) {
+                for (var i = 0; i < updateLinkList.length; i++) {
+                    var updateResElem = await transactionalEntityManager
+                        .getRepository(Link)
+                        .update(
+                            { fromID: updateLinkList[i].from.id, toID: null },
+                            updateLinkList[i],
+                        );
+                    linkUpdateRes.push(updateResElem);
+                }
+            }
+            if (insertedLinkList.length > 0) {
+                linkInsertRes = await transactionalEntityManager
+                    .getRepository(Link)
+                    .insert(insertedLinkList);
+            }
+
+            return [makeUpCourseRes, linkInsertRes, linkUpdateRes];
+        });
+
+        return res;
     }
 
-    async reserveMakeUpCourseByAdmin(
+    async reserveNewClassByAdmin(
         createReservationDto: CreateReservationDto,
         count: number,
     ): Promise<InsertResult> {
@@ -101,9 +157,12 @@ export class ReservationService extends ValidateReservationSerivce {
         return await this.reservationRepository.insert(makeUpCourse);
     }
 
-    async extendCourseByUser(courseInfo: Reservation, userID: string): Promise<UpdateResult> {
-        const [isExtendAvailable, isTimeLineConflict] = await Promise.all([
-            this.isMakeUpAvailable(userID, 15),
+    async extendCourseByUser(
+        courseInfo: Reservation,
+        userID: string,
+    ): Promise<(UpdateResult | InsertResult | UpdateResult[])[]> {
+        const [fromList, isTimeLineConflict] = await Promise.all([
+            this.isMakeUpAvailable(userID, 15, courseInfo.startDate, courseInfo.endDate),
             this.isTimeLineConflict(
                 [courseInfo.startDate],
                 [courseInfo.endDate],
@@ -111,11 +170,60 @@ export class ReservationService extends ValidateReservationSerivce {
                 courseInfo.id,
             ),
         ]);
-        return await this.reservationRepository.update(courseInfo.id, {
-            bookingStatus: 3,
-            endDate: courseInfo.endDate,
-            extendedMin: courseInfo.extendedMin + 15,
+        console.log('fromList ', fromList);
+        var res = await getManager().transaction(async (transactionalEntityManager) => {
+            var insertedLinkList: Link[] = [];
+            var updateLinkList: Link[] = [];
+            for (var i = 0; i < fromList.length; i++) {
+                let link = new Link();
+                link.from = fromList[i].from;
+                link.isPostponed = fromList[i].isFromLast ? 1 : 0;
+                link.used = fromList[i].using;
+                link.toID = courseInfo.id;
+                if (fromList[i].isToNull) {
+                    updateLinkList.push(link);
+                } else {
+                    insertedLinkList.push(link);
+                }
+            }
+            console.log('updateLinkList ', updateLinkList);
+            console.log('insertLinkList ', insertedLinkList);
+            var linkUpdateRes: UpdateResult[] = [];
+            var linkInsertRes: InsertResult;
+            if (updateLinkList.length > 0) {
+                for (var i = 0; i < updateLinkList.length; i++) {
+                    var updateResElem = await transactionalEntityManager
+                        .getRepository(Link)
+                        .update(
+                            { fromID: updateLinkList[i].from.id, toID: null },
+                            updateLinkList[i],
+                        );
+                    linkUpdateRes.push(updateResElem);
+                }
+            }
+            if (insertedLinkList.length > 0) {
+                linkInsertRes = await transactionalEntityManager
+                    .getRepository(Link)
+                    .insert(insertedLinkList);
+            }
+            if (linkUpdateRes?.length > 0) {
+                for (var i = 0; i < linkUpdateRes.length; i++) {
+                    if (linkUpdateRes[i].affected < 1) {
+                        throw new InternalServerErrorException('Link is not updated');
+                    }
+                }
+            }
+            const updateRes = await transactionalEntityManager
+                .getRepository(Reservation)
+                .update(courseInfo.id, {
+                    bookingStatus: 3,
+                    endDate: courseInfo.endDate,
+                    extendedMin: courseInfo.extendedMin + 15,
+                });
+            return [linkUpdateRes, linkInsertRes, updateRes];
         });
+
+        return res;
     }
 
     async extendCourseByAdmin(courseInfo: Reservation, count: number): Promise<UpdateResult> {
@@ -163,13 +271,11 @@ export class ReservationService extends ValidateReservationSerivce {
                 spotStart = new Date(spotStart.getTime() + 30 * 60000);
             }
         }
-
         const controlList = await this.controlService.getControlContainsDate(
             filter.teacherID,
             filter.branchName,
             date,
         );
-        var finalAvaliableSpot: Date[] = [];
 
         for (var i = 0; i < controlList.length; i++) {
             if (controlList[i].status === 1) {
@@ -178,10 +284,9 @@ export class ReservationService extends ValidateReservationSerivce {
                     if (
                         controlList[i].controlStart <= teacherAvailableSpot[j] &&
                         teacherAvailableSpot[j] < controlList[i].controlEnd
-                    )
-                        continue;
-                    else {
-                        finalAvaliableSpot.push(teacherAvailableSpot[j]);
+                    ) {
+                        teacherAvailableSpot.splice(j, 1); //if class is closed, remove the element
+                        j--;
                     }
                 }
             } else {
@@ -195,12 +300,12 @@ export class ReservationService extends ValidateReservationSerivce {
                 }
 
                 while (oepnStart < controlList[i].controlEnd) {
-                    finalAvaliableSpot.push(new Date(oepnStart.valueOf()));
+                    teacherAvailableSpot.push(new Date(oepnStart.valueOf()));
                     oepnStart = new Date(oepnStart.getTime() + 30 * 60000);
                 }
             }
         }
-        var finalAvaliableSpot = finalAvaliableSpot
+        var teacherAvailableSpot = teacherAvailableSpot //중복제거
             .map((s) => s.getTime())
             .filter((s, i, a) => a.indexOf(s) == i)
             .map((s) => new Date(s));
@@ -221,16 +326,47 @@ export class ReservationService extends ValidateReservationSerivce {
             .getMany();
 
         for (var i = 0; i < bookedSpot.length; i++) {
-            for (var j = 0; j < finalAvaliableSpot.length; j++) {
+            for (var j = 0; j < teacherAvailableSpot.length; j++) {
                 if (
-                    bookedSpot[i].startDate <= finalAvaliableSpot[j] &&
-                    finalAvaliableSpot[j] < bookedSpot[i].endDate
+                    bookedSpot[i].startDate <= teacherAvailableSpot[j] &&
+                    teacherAvailableSpot[j] < bookedSpot[i].endDate
                 ) {
-                    finalAvaliableSpot.splice(j, 1);
+                    teacherAvailableSpot.splice(j, 1);
                     j--;
                 }
             }
         }
-        return finalAvaliableSpot;
+        return teacherAvailableSpot;
+    }
+
+    async getChangeList(userID: string, range: string): Promise<Link[]> {
+        const termList: Term[] = await this.termService.getTerm();
+        var startDate: Date, endDate: Date;
+        if (range === 'cur') {
+            startDate = termList[0].termStart;
+            endDate = termList[0].termEnd;
+        } else if (range === 'last') {
+            startDate = termList[1].termStart;
+            endDate = termList[1].termEnd;
+        } else {
+            startDate = termList[1].termStart;
+            endDate = termList[0].termEnd;
+        }
+        const changeListInDate = await this.linkRepository
+            .createQueryBuilder()
+            .leftJoinAndSelect('Link.from', 'from')
+            .leftJoinAndSelect('Link.to', 'to')
+            .where('from.FK_RESERVATION_userID = :userID', { userID: userID })
+            .andWhere(
+                `(from.startDate >= :startDate AND from.endDate <= :endDate) OR 
+                        (to.startDate >= :startDate AND to.endDate <= :endDate)`,
+                {
+                    startDate: startDate,
+                    endDate: endDate,
+                },
+            )
+            .orderBy('from.startDate', 'ASC')
+            .getMany();
+        return changeListInDate;
     }
 }

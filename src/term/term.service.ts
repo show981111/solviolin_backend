@@ -14,7 +14,8 @@ export class TermService {
     constructor(private readonly termRepository: TermRepository) {}
 
     async getTerm(before?: Date): Promise<Term[]> {
-        if (!before) before = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+        // [curTerm, last Term], [before가 있는 term, 그 전 term]
+        if (!before) before = new Date(new Date().getTime() + 9 * 60 * 60 * 1000); //today in KST
         const res = await this.termRepository.find({
             where: {
                 termStart: LessThanOrEqual(before),
@@ -27,6 +28,7 @@ export class TermService {
     }
 
     async getNextTerm(): Promise<Term[]> {
+        //[curTerm, nextTerm]
         const res = await this.termRepository.find({
             where: {
                 termEnd: MoreThanOrEqual(new Date(new Date().getTime() + 9 * 60 * 60 * 1000)),
