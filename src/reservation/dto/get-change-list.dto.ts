@@ -7,10 +7,4 @@ export class GetChangeListDto {
     @IsNotEmpty()
     @ApiProperty()
     readonly range: string;
-
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({ description: 'admin이 요청할떄는 required', required: false })
-    userID?: string;
 }

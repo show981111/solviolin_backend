@@ -358,8 +358,8 @@ export class ReservationService extends ValidateReservationSerivce {
             .leftJoinAndSelect('Link.to', 'to')
             .where('from.FK_RESERVATION_userID = :userID', { userID: userID })
             .andWhere(
-                `(from.startDate >= :startDate AND from.endDate <= :endDate) OR 
-                        (to.startDate >= :startDate AND to.endDate <= :endDate)`,
+                `( (from.startDate >= :startDate AND from.endDate <= :endDate) OR 
+                        (to.startDate >= :startDate AND to.endDate <= :endDate) )`,
                 {
                     startDate: startDate,
                     endDate: endDate,

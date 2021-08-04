@@ -13,6 +13,7 @@ import {
     Req,
     BadRequestException,
     Get,
+    Query,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -213,7 +214,7 @@ export class ReservationController {
         return this.reservationService.getChangeList(req?.user?.userID, getChangeListDto.range);
     }
 
-    @Post('/admin/changes')
+    @Post('/changes/:userID')
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
     @ApiOperation({
@@ -225,12 +226,14 @@ export class ReservationController {
         type: [Link],
         description: 'Link에 추가적으로 from의 Reservation정보, to의 Reservation 정보도 같이줌',
     })
-    getChangeListByAdmin(@Body() getChangeListDto: GetChangeListDto): Promise<Link[]> {
-        if (!getChangeListDto.userID) throw new BadRequestException('userID is empty');
-        return this.reservationService.getChangeList(
-            getChangeListDto.userID,
-            getChangeListDto.range,
-        );
+    getChangeListByAdmin(
+        @Body() getChangeListDto: GetChangeListDto,
+        @Param('userID') userID: string,
+    ): Promise<Link[]> {
+        console.log(getChangeListDto);
+        console.log(userID);
+        if (!userID) throw new BadRequestException('userID is empty');
+        return this.reservationService.getChangeList(userID, getChangeListDto.range);
     }
 
     @Get('/test')
