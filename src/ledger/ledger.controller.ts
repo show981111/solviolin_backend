@@ -9,7 +9,7 @@ import {
     UseFilters,
     UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
@@ -19,6 +19,7 @@ import { LedgerService } from './ledger.service';
 
 @Controller('ledger')
 @UseFilters(TypeOrmExceptionFilter)
+@ApiTags('Ledger API')
 export class LedgerController {
     constructor(private readonly ledgerService: LedgerService) {}
     @Post()

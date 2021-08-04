@@ -31,6 +31,15 @@ export class TermController {
         return this.termService.postTerm(createTermDto);
     }
 
+    @Get()
+    @ApiOperation({
+        summary: '현재, 다음학기 조회 [현재, 다음학기 ]',
+    })
+    @ApiOkResponse({ type: [Term] })
+    getCurAndNextTerm() {
+        return this.termService.getNextTerm();
+    }
+
     @Get('/:take')
     @ApiOperation({
         summary: '등록된 모든 학기 조회',
@@ -38,14 +47,5 @@ export class TermController {
     @ApiOkResponse({ type: [Term] })
     getAllTerm(@Param('take') take: number) {
         return this.termService.getAllTerm(take);
-    }
-
-    @Get('/cur')
-    @ApiOperation({
-        summary: '현재, 다음학기 조회 [현재, 다음학기 ]',
-    })
-    @ApiOkResponse({ type: [Term] })
-    getCurAndNextTerm() {
-        return this.termService.getNextTerm();
     }
 }
