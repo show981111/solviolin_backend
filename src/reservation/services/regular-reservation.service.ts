@@ -217,8 +217,8 @@ export class RegularReservationService extends ValidateReservationSerivce {
 
         const [deleteReservation, updateTerm, updateRegular] = await Promise.all([
             this.reservationRepository.delete({
-                startDate: MoreThanOrEqual(createTermDto.termStart),
-                endDate: LessThanOrEqual(createTermDto.termEnd),
+                startDate: MoreThanOrEqual(curAndFutureTerm[1].termStart),
+                endDate: LessThanOrEqual(curAndFutureTerm[1].termEnd),
             }),
             this.termService.updateTerm(id, createTermDto),
             this.regularScheduleService.updateTermFromTo(id, curAndFutureTerm[0].id),

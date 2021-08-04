@@ -42,6 +42,7 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Post()
+    @UseGuards(JwtAdminGuard)
     @ApiBody({ description: 'create user', type: CreateUserDto })
     @ApiOperation({ summary: 'register user' })
     @ApiCreatedResponse({ description: 'user created' })

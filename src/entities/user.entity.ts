@@ -4,6 +4,7 @@ import { Branch } from 'src/entities/branch.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { Column, Entity, ManyToOne, PrimaryColumn, JoinColumn, OneToMany } from 'typeorm';
 import { CheckIn } from './check-in.entity';
+import { Ledger } from './ledger.entity';
 import { RegularSchedule } from './regularSchedule.entity';
 import { Reservation } from './reservation.entity';
 
@@ -21,6 +22,9 @@ export class User {
 
     @OneToMany((type) => CheckIn, (CheckIn) => CheckIn.user)
     checkIns: CheckIn[];
+
+    @OneToMany((type) => Ledger, (Ledger) => Ledger.user)
+    ledgers: Ledger[];
 
     @Column({ nullable: false })
     userPassword: string;
@@ -55,10 +59,6 @@ export class User {
     @Column({ type: 'varchar', length: 250, nullable: true })
     @ApiProperty({})
     token: string;
-
-    @Column({ type: 'tinyint', nullable: false })
-    @ApiProperty({})
-    isPaid: number;
 
     @Column({ type: 'tinyint', nullable: false })
     @ApiProperty({})

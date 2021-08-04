@@ -116,7 +116,7 @@ export class ValidateReservationSerivce {
         courseDuration: number,
         startDate?: Date,
         endDate?: Date,
-    ): Promise<any> {
+    ): Promise<fromCourseInfo[]> {
         //fromCourseInfo[]
         const termList: Term[] = await this.termService.getTerm();
         if (startDate && endDate) {

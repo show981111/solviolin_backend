@@ -6,10 +6,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { SearchUserDto } from './dto/search-user-query.dto';
+import { on } from 'events';
+import { TermService } from 'src/term/term.service';
 
 @Injectable()
 export class UserService {
-    constructor(private usersRepository: UserRepository) {}
+    constructor(private usersRepository: UserRepository, private termService: TermService) {}
 
     async create(createUserDto: CreateUserDto): Promise<InsertResult> {
         const user = new User();
@@ -65,12 +67,27 @@ export class UserService {
     }
 
     async searchUser(searchUserDto: SearchUserDto): Promise<User[]> {
-        const users = await this.usersRepository.find(searchUserDto);
-        for (var i = 0; i < users.length; i++) {
-            users[i].userPassword = undefined;
-            users[i].salt = undefined;
-            users[i].refreshToken = undefined;
-        }
+        const termList = await this.termService.getTerm();
+
+        const users = await this.usersRepository
+            .createQueryBuilder()
+            .select([
+                'User.userID',
+                'User.branchName',
+                'User.userName',
+                'User.userPhone',
+                'User.userType',
+                'User.userCredit',
+                'User.status',
+                'User.color',
+            ])
+            .leftJoin('User.ledgers', 'ledgers', 'ledgers.FK_LEDGER_termID = :termID', {
+                termID: termList[0].id,
+            })
+            .addSelect(['ledgers.paidAt', 'ledgers.amount'])
+            .where(searchUserDto.getSqlString(), searchUserDto.getSqlParams())
+            .getMany();
+
         return users;
     }
 }

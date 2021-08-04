@@ -1,5 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 import { Control } from 'src/entities/control.entity';
+import { Reservation } from 'src/entities/reservation.entity';
 import { ReservationRepository } from 'src/reservation/repositories/reservation.repository';
 import { UserService } from 'src/user/user.service';
 import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
@@ -57,7 +63,10 @@ export class ControlService {
         return await this.controlRepository.find(query);
     }
 
-    async createControl(createControlDto: CreateControlDto): Promise<InsertResult> {
+    async createControl(
+        createControlDto: CreateControlDto,
+        cancelCourseInClose: number,
+    ): Promise<InsertResult> {
         var controlList = [];
         var teachers = [createControlDto.teacherID];
         if (createControlDto.teacherID === 'all') {
@@ -80,7 +89,8 @@ export class ControlService {
         var res;
         if (createControlDto.status === 1) {
             await getManager().transaction(async (transactionalEntityManager) => {
-                var insertRes = await this.controlRepository
+                var insertRes = await transactionalEntityManager
+                    .getRepository(Control)
                     .createQueryBuilder()
                     .insert()
                     .values(controlList)
@@ -91,17 +101,20 @@ export class ControlService {
                     .execute();
                 res = insertRes;
                 console.log(insertRes);
-                if (!insertRes?.raw?.insertId) return;
-                await this.reservationRepository.update(
-                    {
-                        teacherID: In(teachers),
-                        branchName: createControlDto.branchName,
-                        startDate: MoreThanOrEqual(createControlDto.controlStart),
-                        endDate: LessThan(createControlDto.controlEnd),
-                        bookingStatus: In([0, 1, -1, 3, -3]),
-                    },
-                    { bookingStatus: -2, isControlled: 1 },
-                );
+                if (!insertRes?.raw?.insertId)
+                    throw new InternalServerErrorException('control is not inserted');
+                if (cancelCourseInClose) {
+                    await transactionalEntityManager.getRepository(Reservation).update(
+                        {
+                            teacherID: In(teachers),
+                            branchName: createControlDto.branchName,
+                            startDate: MoreThanOrEqual(createControlDto.controlStart),
+                            endDate: LessThan(createControlDto.controlEnd),
+                            bookingStatus: In([0, 1, -1, 3, -3]),
+                        },
+                        { bookingStatus: -2, isControlled: 1 },
+                    );
+                }
             });
         } else {
             res = await this.controlRepository

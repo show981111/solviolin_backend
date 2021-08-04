@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Patch, Post, UseFilters, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UseFilters,
+    UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { Term } from 'src/entities/term.entity';
@@ -21,18 +31,18 @@ export class TermController {
         return this.termService.postTerm(createTermDto);
     }
 
-    @Get()
+    @Get('/:take')
     @ApiOperation({
         summary: '등록된 모든 학기 조회',
     })
     @ApiOkResponse({ type: [Term] })
-    getAllTerm() {
-        return this.termService.getAllTerm();
+    getAllTerm(@Param('take') take: number) {
+        return this.termService.getAllTerm(take);
     }
 
     @Get('/cur')
     @ApiOperation({
-        summary: '현재, 다음학기 조회',
+        summary: '현재, 다음학기 조회 [현재, 다음학기 ]',
     })
     @ApiOkResponse({ type: [Term] })
     getCurAndNextTerm() {

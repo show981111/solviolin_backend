@@ -41,7 +41,7 @@ export class AuthService {
         const user = await this.usersService.getUserByID(userID);
         var sub = 'user';
         if (user?.userType === 2) sub = 'admin';
-        if (user?.refreshToken === refreshToken) {
+        if (user?.refreshToken === refreshToken && user?.status === 1) {
             const payload = { userID: user.userID, userPhone: user.userPhone };
             return { access_token: this.issueAccessToken(payload, sub) };
         } else {

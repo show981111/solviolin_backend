@@ -113,28 +113,49 @@ export class ReservationController {
         //예약 시작 4시간 전인지, 해당 시간이 선생한테 오픈되있고 클로즈가 아닌지, 혹은 오픈인지 체크
         @Request() req,
     ): Promise<(InsertResult | UpdateResult[])[]> {
-        return this.reservationService.reserveMakeUpCourseByUser(
+        return this.reservationService.reserveMakeUpCourseFromCanceled(
             createReservationDto,
             req?.user?.userID,
+            false,
         );
     }
 
-    @Post('/admin/:count')
+    @Post('/admin')
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
-    @ApiParam({
-        name: 'count',
-        type: 'number',
-        description: '0 or 1 : 잡힌 보강이 카운트에 들어가냐 안들어가냐',
+    @ApiBody({ description: 'admin reserves a makeUp course', type: CreateReservationDto })
+    @ApiOperation({
+        summary: '관리자가 보강 예약',
+        description: '1.다른수업과 안겹치나 2.취소한 수업 있나',
     })
-    @ApiBody({ description: 'user reserves a makeUp course', type: CreateReservationDto })
-    @ApiCreatedResponse()
+    @ApiCreatedResponse({ type: [InsertResult], description: '생성.' })
+    @ApiPreconditionFailedResponse({ description: 'time slot is closed' })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
+    @ApiUnauthorizedResponse()
     reserveMakeUpCourseByAdmin(
         @Body() createReservationDto: CreateReservationDto,
-        @Param('count') count: number,
+        @Request() req,
+    ): Promise<(InsertResult | UpdateResult[])[]> {
+        return this.reservationService.reserveMakeUpCourseFromCanceled(
+            createReservationDto,
+            req?.user?.userID,
+            true,
+        );
+    }
+
+    @Post('/free')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: '관리자가 free course 예약',
+        description: '1.다른수업과 안겹치나 ',
+    })
+    @ApiCreatedResponse({ type: [InsertResult], description: '생성.' })
+    @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
+    reserveFreeCourseByAdmin(
+        @Body() createReservationDto: CreateReservationDto,
     ): Promise<InsertResult> {
-        return this.reservationService.reserveNewClassByAdmin(createReservationDto, count);
+        return this.reservationService.reserveNewClassByAdmin(createReservationDto);
     }
 
     @Patch('/user/extend/:id')
@@ -240,4 +261,10 @@ export class ReservationController {
     test() {
         return this.reservationService.isMakeUpAvailable('sleep1', 15);
     }
+
+    /**
+     * Teacher 관련
+     * 1.선생 예약된 수업 계산해서 돈 계산.
+     * 2.해당 학기 해당 선생 취소된 수업들 리스트업-> 기존 검색 API 이용. teacherID : 선생이름/bookingStatus = -2 , 2 적으면 된다
+     */
 }

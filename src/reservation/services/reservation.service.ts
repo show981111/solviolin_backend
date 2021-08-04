@@ -1,12 +1,9 @@
-import { link } from '@hapi/joi';
 import {
     BadRequestException,
-    Inject,
     Injectable,
     InternalServerErrorException,
     MethodNotAllowedException,
 } from '@nestjs/common';
-import { ControlRepository } from 'src/control/control.repository';
 import { ControlService } from 'src/control/control.service';
 import { Link } from 'src/entities/link.entity';
 import { Reservation } from 'src/entities/reservation.entity';
@@ -63,34 +60,53 @@ export class ReservationService extends ValidateReservationSerivce {
         }
     }
 
-    async reserveMakeUpCourseByUser(
+    async reserveMakeUpCourseFromCanceled(
         createReservationDto: CreateReservationDto,
         userID: string,
+        fromAdmin: boolean,
     ): Promise<(InsertResult | UpdateResult[])[]> {
         var courseDuration =
             (createReservationDto.endDate.valueOf() - createReservationDto.startDate.valueOf()) /
             60000;
-
-        const [isTimelineValid, isTimeLineConflict, fromList] = await Promise.all([
-            this.checkTimeLine(
-                userID,
-                createReservationDto.startDate,
-                createReservationDto.endDate,
-                createReservationDto.teacherID,
-                createReservationDto.branchName,
-            ),
-            this.isTimeLineConflict(
-                [createReservationDto.startDate],
-                [createReservationDto.endDate],
-                createReservationDto.teacherID,
-            ),
-            this.isMakeUpAvailable(
-                userID,
-                courseDuration,
-                createReservationDto.startDate,
-                createReservationDto.endDate,
-            ),
-        ]);
+        var fromList: fromCourseInfo[];
+        if (fromAdmin) {
+            const [fromListRes, isTimeLineConflict] = await Promise.all([
+                this.isMakeUpAvailable(
+                    userID,
+                    courseDuration,
+                    createReservationDto.startDate,
+                    createReservationDto.endDate,
+                ),
+                this.isTimeLineConflict(
+                    [createReservationDto.startDate],
+                    [createReservationDto.endDate],
+                    createReservationDto.teacherID,
+                ),
+            ]);
+            fromList = fromListRes;
+        } else {
+            const [fromListRes, checkTimeLine, isTimeLineConflict] = await Promise.all([
+                this.isMakeUpAvailable(
+                    userID,
+                    courseDuration,
+                    createReservationDto.startDate,
+                    createReservationDto.endDate,
+                ),
+                this.checkTimeLine(
+                    userID,
+                    createReservationDto.startDate,
+                    createReservationDto.endDate,
+                    createReservationDto.teacherID,
+                    createReservationDto.branchName,
+                ),
+                this.isTimeLineConflict(
+                    [createReservationDto.startDate],
+                    [createReservationDto.endDate],
+                    createReservationDto.teacherID,
+                ),
+            ]);
+            fromList = fromListRes;
+        }
 
         var res = await getManager().transaction(async (transactionalEntityManager) => {
             let makeUpCourse = new Reservation();
@@ -142,7 +158,6 @@ export class ReservationService extends ValidateReservationSerivce {
 
     async reserveNewClassByAdmin(
         createReservationDto: CreateReservationDto,
-        count: number,
     ): Promise<InsertResult> {
         if (!createReservationDto.userID) throw new BadRequestException('userID should be defined');
         const isConflict = await this.isTimeLineConflict(
@@ -151,9 +166,7 @@ export class ReservationService extends ValidateReservationSerivce {
             createReservationDto.teacherID,
         );
         let makeUpCourse = new Reservation();
-        var status = -1;
-        if (count === 1) status = 1;
-        makeUpCourse.setReservation(createReservationDto, createReservationDto.userID, status);
+        makeUpCourse.setReservation(createReservationDto, createReservationDto.userID, -1);
         return await this.reservationRepository.insert(makeUpCourse);
     }
 

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsDateString, IsIn, IsInt, IsString } from 'class-validator';
+import { IsOptionalBasedOn } from 'src/utils/validators/conditionalOptional.decorator';
 import { IsAfterStartTime } from 'src/utils/validators/isAfterStartTime.decorator';
 
 export class CreateControlDto {
@@ -24,4 +25,8 @@ export class CreateControlDto {
     @IsIn([0, 1])
     @ApiProperty({ description: '0 : open or 1 : closed' })
     readonly status: number;
+
+    @IsOptionalBasedOn('status')
+    @ApiProperty({ description: '0 : not cancel in close or 1 : cancel in close' })
+    readonly cancelInClose?: number;
 }

@@ -36,7 +36,7 @@ export class TermService {
             order: { termEnd: 'ASC' },
             take: 2,
         });
-        if (res?.length > 1) return res;
+        if (res?.length >= 2) return res;
         else throw new NotFoundException('next term is not registered');
     }
 
@@ -62,8 +62,8 @@ export class TermService {
         });
     }
 
-    async getAllTerm(): Promise<Term[]> {
-        return await this.termRepository.find();
+    async getAllTerm(take: number): Promise<Term[]> {
+        return await this.termRepository.find({ order: { id: 'DESC' }, take: take });
     }
 
     async updateTerm(id: number, createTermDto: CreateTermDto): Promise<UpdateResult> {

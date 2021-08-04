@@ -9,55 +9,46 @@ export class UpdateUserDto {
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly userName: string;
+    readonly userName?: string;
 
     @IsValidPhoneNumber({ message: 'userPhone must be a valid phone number' })
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly userPhone: string;
+    readonly userPhone?: string;
 
     @IsString()
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly userBranch: string;
+    readonly userBranch?: string;
 
     @IsInt()
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly userCredit: number;
+    readonly userCredit?: number;
 
     @IsInt()
     @IsIn([0, 1])
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly status: number;
-
-    @IsInt()
-    @IsIn([0, 1])
-    @IsOptional()
-    @IsNotEmpty()
-    @ApiProperty()
-    @ApiProperty({ required: false })
-    readonly isPaid: number;
+    readonly status?: number;
 
     @IsString()
     @IsOptional()
     @IsNotEmpty()
     @ApiProperty({ required: false })
-    readonly token: string;
+    readonly token?: string;
 
     getBody(): QueryDeepPartialEntity<User> {
         let body: QueryDeepPartialEntity<User> = {};
         if (this.userName) body.userName = this.userName;
         if (this.userPhone) body.userPhone = this.userPhone;
         if (this.userBranch) body.branchName = this.userBranch;
-        if (this.userCredit) body.userCredit = this.userCredit;
-        if (this.status) body.status = this.status;
-        if (this.isPaid) body.isPaid = this.isPaid;
+        if (this.userCredit !== undefined) body.userCredit = this.userCredit;
+        if (this.status !== undefined) body.status = this.status;
         if (this.token) body.token = this.token;
 
         return body;
@@ -68,9 +59,8 @@ export class UpdateUserDto {
             !this.userName &&
             !this.userPhone &&
             !this.userBranch &&
-            !this.userCredit &&
-            !this.status &&
-            !this.isPaid &&
+            this.userCredit === undefined &&
+            this.status === undefined &&
             !this.token
         );
     }
