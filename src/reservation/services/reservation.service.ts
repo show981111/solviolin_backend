@@ -1,3 +1,4 @@
+import { string } from '@hapi/joi';
 import {
     BadRequestException,
     Injectable,
@@ -12,11 +13,21 @@ import { Term } from 'src/entities/term.entity';
 import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.service';
 import { TeacherService } from 'src/teacher/teacher.service';
 import { TermService } from 'src/term/term.service';
-import { getManager, InsertResult, UpdateResult } from 'typeorm';
+import {
+    getManager,
+    In,
+    InsertResult,
+    LessThanOrEqual,
+    MoreThanOrEqual,
+    Not,
+    UpdateResult,
+} from 'typeorm';
 import { AvailableSpotFilterDto } from '../dto/available-spot-filter.dto';
+import { CalculateIncomeDto } from '../dto/calculate-income.dto';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { ReservationFilterDto } from '../dto/reservation-filter.dto';
 import { fromCourseInfo } from '../interfaces/from-course-info.interface';
+import { Income } from '../interfaces/income.interface';
 import { LinkRepository } from '../repositories/link.repository';
 import { ReservationRepository } from '../repositories/reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
@@ -381,5 +392,50 @@ export class ReservationService extends ValidateReservationSerivce {
             .orderBy('from.startDate', 'ASC')
             .getMany();
         return changeListInDate;
+    }
+
+    async calculateSalary(calculateIncomeDto: CalculateIncomeDto): Promise<Map<string, Income>> {
+        const termInfo = await this.termService.getTermById(calculateIncomeDto.termID);
+        const courseInCondtion = await this.reservationRepository.find({
+            branchName: calculateIncomeDto.branchName,
+            startDate: MoreThanOrEqual(termInfo.termStart),
+            endDate: LessThanOrEqual(termInfo.termEnd),
+            bookingStatus: In([-3, -1, 0, 1, 3]),
+            userID: Not('break'),
+        });
+        var incomeMap = new Map<string, Income>();
+        for (var i = 0; i < courseInCondtion.length; i++) {
+            var duration: number =
+                (courseInCondtion[i].endDate.getTime() - courseInCondtion[i].startDate.getTime()) /
+                60000;
+
+            if (incomeMap.has(courseInCondtion[i].teacherID)) {
+                if (courseInCondtion[i].startDate.getHours() < 16) {
+                    incomeMap.get(courseInCondtion[i].teacherID).dayTime += duration;
+                    incomeMap.get(courseInCondtion[i].teacherID).income +=
+                        (duration * calculateIncomeDto.dayTimeCost) / 60;
+                } else {
+                    incomeMap.get(courseInCondtion[i].teacherID).nightTime += duration;
+                    incomeMap.get(courseInCondtion[i].teacherID).income +=
+                        (duration * calculateIncomeDto.nightTimeCost) / 60;
+                }
+            } else {
+                if (courseInCondtion[i].startDate.getHours() < 16) {
+                    incomeMap.set(courseInCondtion[i].teacherID, {
+                        dayTime: duration,
+                        nightTime: 0,
+                        income: (duration * calculateIncomeDto.dayTimeCost) / 60,
+                    });
+                } else {
+                    incomeMap.set(courseInCondtion[i].teacherID, {
+                        dayTime: 0,
+                        nightTime: duration,
+                        income: (duration * calculateIncomeDto.nightTimeCost) / 60,
+                    });
+                }
+            }
+        }
+
+        return incomeMap;
     }
 }

@@ -16,4 +16,9 @@ export class CreateLedgerDto {
     @IsNotEmpty()
     @ApiProperty()
     readonly termID: number;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty()
+    readonly branchName: string;
 }

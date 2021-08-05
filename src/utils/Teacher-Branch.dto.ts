@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Branch } from 'src/entities/branch.entity';
 import { TeacherID } from 'src/entities/teacherID.entity';

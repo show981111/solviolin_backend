@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Ledger } from 'src/entities/ledger.entity';
 import { UserService } from 'src/user/user.service';
 import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { CreateLedgerDto } from './dto/create-ledger.dto';
+import { SearchLedgerItemDto } from './dto/search-ledger-item.dto';
 import { SearchLedgerDto } from './dto/search-ledger.dto';
 import { LedgerRepository } from './ledger.repository';
 
@@ -18,6 +20,7 @@ export class LedgerService {
             userID: createLedgerDto.userID,
             termID: createLedgerDto.termID,
             amount: createLedgerDto.amount,
+            branchName: createLedgerDto.branchName,
         });
         return insertRes;
     }
@@ -33,5 +36,9 @@ export class LedgerService {
             total += res[i].amount;
         }
         return total;
+    }
+
+    async search(searchLedgerItemDto: SearchLedgerItemDto): Promise<Ledger[]> {
+        return await this.ledgerRepository.find({ where: searchLedgerItemDto });
     }
 }

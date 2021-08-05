@@ -38,9 +38,11 @@ import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filte
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
 import { InsertResult, UpdateResult } from 'typeorm';
 import { AvailableSpotFilterDto } from './dto/available-spot-filter.dto';
+import { CalculateIncomeDto } from './dto/calculate-income.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { GetChangeListDto } from './dto/get-change-list.dto';
 import { ReservationFilterDto } from './dto/reservation-filter.dto';
+import { Income } from './interfaces/income.interface';
 import { CheckCancelBefore4h } from './pipes/check-cancel-before4h.pipe';
 import { IdToEntityTransform } from './pipes/extend-to-create.pipe';
 import { ValidateReservationTime } from './pipes/validate-reservation-time.pipe';
@@ -267,4 +269,17 @@ export class ReservationController {
      * 1.선생 예약된 수업 계산해서 돈 계산.
      * 2.해당 학기 해당 선생 취소된 수업들 리스트업-> 기존 검색 API 이용. teacherID : 선생이름/bookingStatus = -2 , 2 적으면 된다
      */
+
+    @Post('/salary')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: '선생님 급여 계산',
+    })
+    async calculateSalary(
+        @Body() calculateIncomeDto: CalculateIncomeDto,
+    ): Promise<[string, Income][]> {
+        const res = await this.reservationService.calculateSalary(calculateIncomeDto);
+        return [...res.entries()];
+    }
 }

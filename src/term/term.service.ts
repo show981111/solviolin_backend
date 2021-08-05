@@ -72,4 +72,10 @@ export class TermService {
             termEnd: createTermDto.termEnd,
         });
     }
+
+    async getTermById(id: number): Promise<Term> {
+        const res = await this.termRepository.findOne(id);
+        if (!res) throw new NotFoundException('term not found');
+        return res;
+    }
 }
