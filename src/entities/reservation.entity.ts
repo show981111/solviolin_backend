@@ -1,14 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateReservationDto } from 'src/reservation/dto/create-reservation.dto';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+    OneToMany,
+    BaseEntity,
+    RelationId,
+} from 'typeorm';
 import { Link } from './link.entity';
 import { RegularSchedule } from './regularSchedule.entity';
 import { TeacherID } from './teacherID.entity';
 import { User } from './user.entity';
 
 @Entity('RESERVATION')
-export class Reservation {
+export class Reservation extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -42,6 +51,7 @@ export class Reservation {
     user: User;
 
     @Column({ name: 'FK_RESERVATION_userID' })
+    @RelationId((reservation: Reservation) => reservation.user)
     @ApiProperty()
     userID: string;
 

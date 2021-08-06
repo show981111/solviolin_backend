@@ -1,11 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    RelationId,
+} from 'typeorm';
 import { Branch } from './branch.entity';
 import { Term } from './term.entity';
 import { User } from './user.entity';
 
 @Entity('LEDGER')
-export class Ledger {
+export class Ledger extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -23,6 +31,7 @@ export class Ledger {
     user: User;
 
     @Column({ name: 'FK_LEDGER_userID' })
+    @RelationId((ledger: Ledger) => ledger.user)
     @ApiProperty()
     userID: string;
 
@@ -35,11 +44,12 @@ export class Ledger {
     term: Term;
 
     @Column({ name: 'FK_LEDGER_termID' })
+    @RelationId((ledger: Ledger) => ledger.term)
     @ApiProperty()
     termID: number;
 
     /** Branch */
-    @ManyToOne((type) => Term, (Term) => Term.id, {
+    @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
         onDelete: 'SET NULL',
         onUpdate: 'CASCADE',
     })
@@ -47,6 +57,7 @@ export class Ledger {
     branch: Branch;
 
     @Column({ name: 'FK_LEDGER_branch' })
+    @RelationId((ledger: Ledger) => ledger.branch)
     @ApiProperty()
     branchName: string;
 

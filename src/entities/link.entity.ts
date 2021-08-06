@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    RelationId,
+} from 'typeorm';
 import { Reservation } from './reservation.entity';
 
 @Entity('LINK')
-export class Link {
+export class Link extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -17,6 +25,7 @@ export class Link {
     from: Reservation;
 
     @Column({ name: 'FK_LINK_from' })
+    @RelationId((link: Link) => link.from)
     @ApiProperty()
     fromID: number;
 
@@ -29,6 +38,7 @@ export class Link {
     to: Reservation;
 
     @Column({ name: 'FK_LINK_to' })
+    @RelationId((link: Link) => link.to)
     @ApiProperty()
     toID: number;
 

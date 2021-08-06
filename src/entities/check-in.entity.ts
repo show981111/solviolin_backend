@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    RelationId,
+} from 'typeorm';
 import { Branch } from './branch.entity';
 
 @Entity('CHECKIN')
-export class CheckIn {
+export class CheckIn extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -18,6 +26,7 @@ export class CheckIn {
     user: User;
 
     @Column({ name: 'FK_CHECKIN_userID' })
+    @RelationId((checkIn: CheckIn) => checkIn.user)
     @ApiProperty()
     userID: string;
 
@@ -30,6 +39,7 @@ export class CheckIn {
     branch: Branch;
 
     @Column({ name: 'FK_CHECKIN_branch' })
+    @RelationId((checkIn: CheckIn) => checkIn.branch)
     @ApiProperty()
     branchName: string;
 

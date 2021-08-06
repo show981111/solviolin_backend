@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('VERIFICATION')
-export class Verification {
+export class Verification extends BaseEntity {
     @PrimaryColumn('varchar', { length: 45 })
     @ApiProperty()
     userID: string;

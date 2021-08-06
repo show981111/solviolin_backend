@@ -14,6 +14,7 @@ import {
     BadRequestException,
     Get,
     Query,
+    Delete,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -36,7 +37,7 @@ import { Link } from 'src/entities/link.entity';
 import { Reservation } from 'src/entities/reservation.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
-import { InsertResult, UpdateResult } from 'typeorm';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { AvailableSpotFilterDto } from './dto/available-spot-filter.dto';
 import { CalculateIncomeDto } from './dto/calculate-income.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -281,5 +282,11 @@ export class ReservationController {
     ): Promise<[string, Income][]> {
         const res = await this.reservationService.calculateSalary(calculateIncomeDto);
         return [...res.entries()];
+    }
+
+    @Delete()
+    @UseGuards(JwtAdminGuard)
+    async deleteReservations(@Body('ids') ids: number[]): Promise<DeleteResult> {
+        return this.reservationService.deleteReservation(ids);
     }
 }

@@ -1,14 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateTeacherDto } from 'src/teacher/dto/create-teacher.dto';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+    BaseEntity,
+    RelationId,
+} from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 
 @Entity('TEACHER')
-export class Teacher {
+export class Teacher extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
+
+    @Column({ name: 'FK_TEACHER_teacherID' })
+    @RelationId((teacher: Teacher) => teacher.teacher)
+    @ApiProperty()
+    teacherID: string;
 
     @ManyToOne((type) => TeacherID, (TeacherID) => TeacherID.teacherID, {
         onDelete: 'CASCADE',
@@ -16,10 +29,6 @@ export class Teacher {
     })
     @JoinColumn({ name: 'FK_TEACHER_teacherID' })
     teacher: TeacherID;
-
-    @Column({ name: 'FK_TEACHER_teacherID' })
-    @ApiProperty()
-    teacherID: string;
 
     @ManyToOne((type) => Branch, (Branch) => Branch.branchName, {
         onDelete: 'CASCADE',

@@ -3,8 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './utils/set-up-swagger';
 import * as helmet from 'helmet';
-import { HTTPLoggingInterceptor } from './utils/interceptors/HTTPlogging.interceptor';
-import { AllExceptionsFilter } from './utils/filters/AllException.filter';
+import { setupAdminPanel } from './admin-panel/admin-panel.plugin';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -30,6 +29,8 @@ async function bootstrap() {
         allowedHeaders:
             'Origin,X-Requested-With,Content-Type,Accept,Authorization,authorization,X-Forwarded-for',
     });
+
+    await setupAdminPanel(app);
 
     setupSwagger(app);
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/entities/user.entity';
-import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Control } from './control.entity';
 import { Ledger } from './ledger.entity';
 import { RegularSchedule } from './regularSchedule.entity';
@@ -8,7 +8,7 @@ import { Reservation } from './reservation.entity';
 import { Teacher } from './teacher.entity';
 
 @Entity('BRANCH')
-export class Branch {
+export class Branch extends BaseEntity {
     @PrimaryColumn('varchar', { length: 10, nullable: false })
     @ApiProperty()
     branchName: string;
@@ -32,6 +32,7 @@ export class Branch {
     ledgers: Ledger[];
 
     constructor(branch: string) {
+        super();
         this.branchName = branch;
     }
 }

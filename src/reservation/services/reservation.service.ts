@@ -14,6 +14,7 @@ import { RegularScheduleService } from 'src/regular-schedule/regular-schedule.se
 import { TeacherService } from 'src/teacher/teacher.service';
 import { TermService } from 'src/term/term.service';
 import {
+    DeleteResult,
     getManager,
     In,
     InsertResult,
@@ -437,5 +438,9 @@ export class ReservationService extends ValidateReservationSerivce {
         }
 
         return incomeMap;
+    }
+
+    async deleteReservation(ids: number[]): Promise<DeleteResult> {
+        return await this.reservationRepository.delete(ids);
     }
 }

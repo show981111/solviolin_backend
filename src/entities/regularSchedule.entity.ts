@@ -1,14 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Branch } from 'src/entities/branch.entity';
 import { CreateRegularDto } from 'src/regular-schedule/dto/create-regular.dto';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+    OneToMany,
+    BaseEntity,
+    RelationId,
+} from 'typeorm';
 import { Reservation } from './reservation.entity';
 import { TeacherID } from './teacherID.entity';
 import { Term } from './term.entity';
 import { User } from './user.entity';
 
 @Entity('REGULARSCHEDULE')
-export class RegularSchedule {
+export class RegularSchedule extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -42,6 +51,7 @@ export class RegularSchedule {
     user: User;
 
     @Column({ name: 'FK_REGULARSCHEDULE_userID' })
+    @RelationId((regularSchedule: RegularSchedule) => regularSchedule.user)
     @ApiProperty()
     userID: string;
 
@@ -54,6 +64,7 @@ export class RegularSchedule {
     teacher: TeacherID;
 
     @Column({ name: 'FK_REGULARSCHEDULE_teacherID' })
+    @RelationId((regularSchedule: RegularSchedule) => regularSchedule.teacher)
     @ApiProperty()
     teacherID: string;
 
@@ -66,6 +77,7 @@ export class RegularSchedule {
     branch: Branch;
 
     @Column({ name: 'FK_REGULARSCHEDULE_branch' })
+    @RelationId((regularSchedule: RegularSchedule) => regularSchedule.branch)
     @ApiProperty()
     branchName: string;
 
@@ -82,6 +94,7 @@ export class RegularSchedule {
     term: Term;
 
     @Column({ name: 'FK_REGULARSCHEDULE_termID' })
+    @RelationId((regularSchedule: RegularSchedule) => regularSchedule.term)
     @ApiProperty()
     termID: number;
 

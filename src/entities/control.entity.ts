@@ -1,14 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CreateControlDto } from 'src/control/dto/create-control.dto';
 import { Branch } from 'src/entities/branch.entity';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+    Index,
+    BaseEntity,
+    RelationId,
+} from 'typeorm';
 import { TeacherID } from './teacherID.entity';
 
 @Entity('CONTROL')
 @Index('unique_row', ['controlStart', 'controlEnd', 'teacherID', 'branchName', 'status'], {
     unique: true,
 })
-export class Control {
+export class Control extends BaseEntity {
     @PrimaryGeneratedColumn('increment')
     @ApiProperty()
     id: number;
@@ -29,6 +38,7 @@ export class Control {
     teacher: TeacherID;
 
     @Column({ name: 'FK_CONTROL_teacherID' })
+    @RelationId((control: Control) => control.teacher)
     @ApiProperty()
     teacherID: string;
 
@@ -40,6 +50,7 @@ export class Control {
     branch: Branch;
 
     @Column({ name: 'FK_CONTROL_branch' })
+    @RelationId((control: Control) => control.branch)
     @ApiProperty()
     branchName: string;
 

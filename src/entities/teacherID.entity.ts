@@ -1,11 +1,11 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, BaseEntity } from 'typeorm';
 import { Control } from './control.entity';
 import { RegularSchedule } from './regularSchedule.entity';
 import { Reservation } from './reservation.entity';
 import { Teacher } from './teacher.entity';
 
 @Entity('TEACHERID')
-export class TeacherID {
+export class TeacherID extends BaseEntity {
     @PrimaryColumn('varchar', { length: 45 })
     teacherID: string;
 
@@ -22,6 +22,7 @@ export class TeacherID {
     regularSchedules: RegularSchedule[];
 
     constructor(teacherID: string) {
+        super();
         this.teacherID = teacherID;
     }
 }
