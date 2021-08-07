@@ -45,11 +45,11 @@ export class Teacher extends BaseEntity {
     @ApiProperty()
     workDow: number;
 
-    @Column({ type: 'time', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     @ApiProperty()
     startTime: Date;
 
-    @Column({ type: 'time', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     @ApiProperty()
     endTime: Date;
 

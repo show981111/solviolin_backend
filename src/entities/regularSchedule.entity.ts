@@ -22,11 +22,11 @@ export class RegularSchedule extends BaseEntity {
     @ApiProperty()
     id: number;
 
-    @Column({ type: 'time', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     @ApiProperty()
     startTime: string;
 
-    @Column({ type: 'time', nullable: false })
+    @Column({ type: 'varchar', nullable: false })
     @ApiProperty()
     endTime: string;
 

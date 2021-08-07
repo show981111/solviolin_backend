@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './utils/set-up-swagger';
 import * as helmet from 'helmet';
-import { setupAdminPanel } from './admin-panel/admin-panel.plugin';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -30,7 +29,7 @@ async function bootstrap() {
             'Origin,X-Requested-With,Content-Type,Accept,Authorization,authorization,X-Forwarded-for',
     });
 
-    await setupAdminPanel(app);
+    // await setupAdminPanel(app);
 
     setupSwagger(app);
 

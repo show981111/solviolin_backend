@@ -22,6 +22,26 @@ import 'winston-daily-rotate-file';
 import { AllExceptionsFilter } from './utils/filters/AllException.filter';
 import { TypeOrmExceptionFilter } from './utils/filters/typeOrmException.filter';
 import { LedgerModule } from './ledger/ledger.module';
+import { Database, Resource } from '@adminjs/typeorm';
+import AdminJS from 'adminjs';
+import { validate } from 'class-validator';
+import { AdminModule } from '@adminjs/nestjs'; // lib
+import { User } from './entities/user.entity';
+import { Branch } from './entities/branch.entity';
+import { CheckIn } from 'src/entities/check-in.entity';
+import { Control } from 'src/entities/control.entity';
+import { Ledger } from 'src/entities/ledger.entity';
+import { Link } from 'src/entities/link.entity';
+import { RegularSchedule } from 'src/entities/regularSchedule.entity';
+import { Reservation } from 'src/entities/reservation.entity';
+import { Teacher } from 'src/entities/teacher.entity';
+import { TeacherID } from 'src/entities/teacherID.entity';
+import { Term } from 'src/entities/term.entity';
+import { Verification } from './entities/verification.entity';
+import e from 'express';
+
+Resource.validate = validate;
+AdminJS.registerAdapter({ Database, Resource });
 
 @Module({
     imports: [
@@ -80,6 +100,43 @@ import { LedgerModule } from './ledger/ledger.module';
             ],
         }),
         LedgerModule,
+        AdminModule.createAdminAsync({
+            useFactory: () => ({
+                adminJsOptions: {
+                    rootPath: '/admin',
+                    resources: [
+                        User,
+                        Branch,
+                        CheckIn,
+                        Control,
+                        Ledger,
+                        Link,
+                        RegularSchedule,
+                        Reservation,
+                        Teacher,
+                        TeacherID,
+                        Term,
+                        Verification,
+                    ],
+                },
+
+                auth: {
+                    authenticate: async (email, password) =>
+                        new Promise((resolve, reject) => {
+                            if (
+                                email === process.env.ADMIN_ID &&
+                                password === process.env.ADMIN_PW
+                            ) {
+                                resolve({ email: process.env.ADMIN_ID });
+                            } else {
+                                resolve(null);
+                            }
+                        }),
+                    cookieName: process.env.ADMIN_ID,
+                    cookiePassword: process.env.ADMIN_COOKIE,
+                },
+            }),
+        }),
     ],
     controllers: [AppController],
     providers: [
