@@ -10,6 +10,7 @@ import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { TeacherBranchDto } from '../utils/Teacher-Branch.dto';
 import { TeacherRepository } from './teacher.repository';
 import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
+import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
 
 @Injectable()
 export class TeacherService {
@@ -40,6 +41,15 @@ export class TeacherService {
 
     async search(query: TeacherBranchQuery): Promise<Teacher[]> {
         return await this.teacherRepository.find(query);
+    }
+
+    async getNameList(query: BranchDowSearchDto): Promise<Teacher[]> {
+        return await this.teacherRepository
+            .createQueryBuilder()
+            .select('Teacher.teacherID')
+            .where(query)
+            .groupBy('Teacher.teacherID')
+            .getMany();
     }
 
     async getWorkSlot(query: TeacherBranchQuery, startDate: Date, endDate: Date): Promise<Teacher> {

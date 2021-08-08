@@ -26,6 +26,7 @@ import {
     ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Teacher } from 'src/entities/teacher.entity';
+import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
 
 @Controller('teacher')
 @UseFilters(TypeOrmExceptionFilter)
@@ -78,5 +79,13 @@ export class TeacherController {
     @ApiOperation({ summary: '선생님 스케쥴 검색' })
     serachTeacher(@Query() queryTeacherDto: TeacherBranchDto): Promise<Teacher[]> {
         return this.teacherService.search(queryTeacherDto.getQuery);
+    }
+
+    @Get('/search/name') //teacherID or Branch
+    @ApiQuery({ description: 'search option', type: TeacherBranchDto })
+    @ApiOkResponse({ type: [Teacher] })
+    @ApiOperation({ summary: '선생님 이름 리스트 검색' })
+    searchTeacherName(@Query() branchDowSearchDto: BranchDowSearchDto): Promise<Teacher[]> {
+        return this.teacherService.getNameList(branchDowSearchDto);
     }
 }

@@ -8,4 +8,8 @@ export class BranchService {
     async createBranch(branchName: string) {
         return await this.branchRepository.insert({ branchName: branchName });
     }
+
+    async getAllbranch() {
+        return await this.branchRepository.find();
+    }
 }

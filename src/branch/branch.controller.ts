@@ -1,6 +1,7 @@
-import { Body, Controller, Post, UseFilters, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
+import { Branch } from 'src/entities/branch.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { InsertResult } from 'typeorm';
 import { BranchService } from './branch.service';
@@ -18,5 +19,11 @@ export class BranchController {
     @ApiOperation({ summary: 'create branch' })
     postBranch(@Body() createBranch: CreateBranch): Promise<InsertResult> {
         return this.branchService.createBranch(createBranch.branchName);
+    }
+
+    @Get()
+    @ApiOperation({ summary: 'get branch' })
+    getBranch(): Promise<Branch[]> {
+        return this.branchService.getAllbranch();
     }
 }
