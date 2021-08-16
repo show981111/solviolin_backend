@@ -79,7 +79,6 @@ export class UserService {
                 'User.userType',
                 'User.userCredit',
                 'User.status',
-                'User.color',
             ])
             .leftJoin('User.ledgers', 'ledgers', 'ledgers.FK_LEDGER_termID = :termID', {
                 termID: termList[0].id,
