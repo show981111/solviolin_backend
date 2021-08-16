@@ -77,10 +77,6 @@ export class User extends BaseEntity {
     @ApiProperty({})
     salt: string;
 
-    @Column({ type: 'varchar', length: 45, nullable: true })
-    @ApiProperty({})
-    color: string;
-
     @Column({ type: 'varchar', length: 250, default: '0' })
     @ApiProperty({})
     refreshToken: string;

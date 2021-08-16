@@ -268,7 +268,12 @@ export class ReservationService extends ValidateReservationSerivce {
     }
 
     async getReservationByFilter(query: ReservationFilterDto): Promise<Reservation[]> {
-        return this.reservationRepository.find(query.getFilter);
+        return await this.reservationRepository
+            .createQueryBuilder()
+            .leftJoin('Reservation.teacher', 'teacher')
+            .addSelect('teacher.color')
+            .where(query.getFilter)
+            .getMany();
     }
 
     //1. 선생 시간표 받아서 2. open 열고 3. close 닫고 4. 수업있는곳 닫고

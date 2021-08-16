@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryColumn, OneToMany, BaseEntity } from 'typeorm';
 import { Control } from './control.entity';
 import { RegularSchedule } from './regularSchedule.entity';
@@ -8,6 +9,10 @@ import { Teacher } from './teacher.entity';
 export class TeacherID extends BaseEntity {
     @PrimaryColumn('varchar', { length: 45 })
     teacherID: string;
+
+    @Column({ type: 'varchar', length: 45, nullable: true })
+    @ApiProperty({})
+    color: string;
 
     @OneToMany((type) => Teacher, (Teacher) => Teacher.teacher)
     teachers: Teacher[];
