@@ -1,3 +1,5 @@
+/data
+init-letsencrypt.sh
 .env
 .adminjs
 # compiled output
