@@ -2,9 +2,18 @@
   Backend for Solviolin Academy Course Reservation Application
 </p>
 
-API DESCRIPTION : <a href = http://3.36.254.21/api-docs>swagger-api-description</a>
+API DESCRIPTION : <a href = 솔바이올린.com/api-docs>swagger-api-description</a>
 
-<p>Reverse Proxy : Nginx -> Nest.js(express)</p>
-<p>Deployed on the AWS EC2 using Docker</p>
+<p>Reverse Proxy/Load Balancer : Nginx</p>
+<p>Database : MariaDB</p>
+<p>Server : Nest.js(express)</p>
+<p>CI/CD : Jenkins</p>
+<p>HTTPS : Letsencrypt, certbot</p>
+<p>Everything is deployed on the Docker Container</p>
+
+<p>AWS</p>
+<p>AWS Route53 -> AWS Ec2 <-> Aws Rds</p>
+
+
 
 
