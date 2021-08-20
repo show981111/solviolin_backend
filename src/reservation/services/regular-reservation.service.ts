@@ -133,7 +133,7 @@ export class RegularReservationService extends ValidateReservationSerivce {
         const nextTerm = termList[1];
         condition.termID = curTerm.id;
         const regularList = await this.regularScheduleService.getExtendCandidates(condition); //regular schedule list that needed to be extended. not updated yet.
-        nextTerm.termStart.setHours(0, 0, 0, 0);
+        nextTerm.termStart.setHours(0, 0, 0, 0); //텀아이디가 현재텀인 수업들을 다음텀의 시작부터 끝까지 예약 잡고 레귤러의 엔드데이트를 다음텀 종료일로, 텀아이디를 다음텀 아이디로 업데이트
         var termStart = new Date(nextTerm.termStart.valueOf());
         let dowToStartDateMap = new Map();
 

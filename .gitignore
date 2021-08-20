@@ -2,6 +2,7 @@
 .env
 .adminjs
 # compiled output
+/migration
 /dist
 /node_modules
 /log

@@ -42,7 +42,7 @@ export class User extends BaseEntity {
     @ApiProperty({})
     userName: string;
 
-    @Column({ type: 'varchar', length: 11, unique: true, nullable: false })
+    @Column({ type: 'varchar', length: 11, nullable: false })
     @ApiProperty({})
     userPhone: string;
 

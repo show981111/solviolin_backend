@@ -6,5 +6,6 @@ jenkins_home
 .git
 .gitignore
 .vscode
+.adminjs
 dist
 docker-compose.yaml

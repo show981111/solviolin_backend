@@ -6,8 +6,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { SearchUserDto } from './dto/search-user-query.dto';
-import { on } from 'events';
 import { TermService } from 'src/term/term.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -88,5 +88,42 @@ export class UserService {
             .getMany();
 
         return users;
+    }
+
+    async migrateUserDate(branchName: string) {
+        var obj = JSON.parse(
+            fs.readFileSync('/Users/yongseunglee/solviolin/migration/USER.json', 'utf8'),
+        );
+        var userData = obj[2].data;
+        const userList: User[] = [];
+
+        for (var i = 0; i < userData.length; i++) {
+            if (branchName !== userData[i].userBranch) continue;
+
+            if (userData[i].userID && userData[i].status === '') {
+                const user: User = new User();
+                user.userID = userData[i].userID;
+                user.userName = userData[i].userName;
+                var phone: string = userData[i].userPhone;
+                phone = phone.replace('-', '');
+                phone = phone.replace('-', '');
+                user.userPhone = phone;
+                user.userCredit = 2;
+                user.status = 1;
+                user.branchName = userData[i].userBranch;
+                if (userData[i].userType === '학생') {
+                    user.userType = 0;
+                } else if (userData[i].userType === '강사') {
+                    user.userType = 1;
+                }
+                const salt = await bcrypt.genSalt();
+                const hashedPassword = await bcrypt.hash(userData[i].userPassword, salt);
+                user.salt = salt;
+                user.userPassword = hashedPassword;
+                userList.push(user);
+            }
+        }
+
+        return await this.usersRepository.insert(userList);
     }
 }

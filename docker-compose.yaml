@@ -34,7 +34,7 @@ services:
         # ports:
         #    - 3000:3000
         expose:
-            - '3000' # 다른 컨테이너에게 3001번 포트 open
+            - '3000' # 다른 컨테이너에게 3000번 포트 open
         networks:
             - nestjs-network
         volumes:

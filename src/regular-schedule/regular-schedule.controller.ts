@@ -7,6 +7,7 @@ import {
     Get,
     Request,
     UseInterceptors,
+    Post,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -69,4 +70,10 @@ export class RegularScheduleController {
             new Date(new Date().getTime() + 9 * 60 * 60 * 1000),
         );
     }
+
+    // @Post('/migrate')
+    // migrateRegular() {
+    //     console.log('dsa');
+    //     return this.regularScheduleService.migrateRegular();
+    // }
 }
