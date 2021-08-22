@@ -305,8 +305,8 @@ export class ReservationController {
         return this.reservationService.getCanceledCourseByTeacher(teacherID);
     }
 
-    @Post('/migrate/cancel')
-    async migrateCancelled() {
-        return this.reservationService.migrateCancel();
-    }
+    // @Post('/migrate/cancel')
+    // async migrateCancelled() {
+    //     return this.reservationService.migrateCancel();
+    // }
 }

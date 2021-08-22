@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { Teacher } from 'src/entities/teacher.entity';
 import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
+import { TeacherID } from 'src/entities/teacherID.entity';
 
 @Controller('teacher')
 @UseFilters(TypeOrmExceptionFilter)
@@ -89,8 +90,8 @@ export class TeacherController {
         return this.teacherService.getNameList(branchDowSearchDto);
     }
 
-    @Post('/migrate') //teacherID or Branch
-    migrateTeacher(): Promise<any> {
-        return this.teacherService.migrateSchedule();
-    }
+    // @Post('/migrate') //teacherID or Branch
+    // migrateTeacher(): Promise<any> {
+    //     return this.teacherService.migrateSchedule();
+    // }
 }

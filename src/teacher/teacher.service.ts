@@ -13,6 +13,7 @@ import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.int
 import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
 import * as fs from 'fs';
 import { User } from 'src/entities/user.entity';
+import { TeacherID } from 'src/entities/teacherID.entity';
 @Injectable()
 export class TeacherService {
     constructor(private teacherRepository: TeacherRepository) {}
@@ -47,8 +48,9 @@ export class TeacherService {
     async getNameList(query: BranchDowSearchDto): Promise<Teacher[]> {
         return await this.teacherRepository
             .createQueryBuilder()
-            .select('Teacher.teacherID')
             .where(query)
+            .leftJoin('Teacher.teacher', 'teacher.teacherID')
+            .addSelect('teacher.teacherID.color')
             .groupBy('Teacher.teacherID')
             .getMany();
     }

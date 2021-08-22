@@ -38,7 +38,6 @@ import { Teacher } from 'src/entities/teacher.entity';
 import { TeacherID } from 'src/entities/teacherID.entity';
 import { Term } from 'src/entities/term.entity';
 import { Verification } from './entities/verification.entity';
-import e from 'express';
 
 Resource.validate = validate;
 AdminJS.registerAdapter({ Database, Resource });

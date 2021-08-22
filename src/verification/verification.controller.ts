@@ -4,7 +4,6 @@ import { VerificationService } from './verification.service';
 import { UpdateVerificationDto } from './dto/update-verification.dto';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SendSMSDto } from './dto/send-sms.dto';
 @Controller('verification')
 @UseFilters(TypeOrmExceptionFilter)
 @ApiTags('Verification API')
@@ -15,12 +14,6 @@ export class VerificationController {
     @ApiOperation({ summary: 'send verification code to the user' })
     getVerificationCode(@Param('userID') userID: string) {
         return this.verificationService.sendSMS(userID);
-    }
-
-    @Post('/sms') // Post verification Code
-    @ApiOperation({ summary: 'send verification code to the user' })
-    sendMessage(@Body() sendSMSDto: SendSMSDto) {
-        return this.verificationService.cafe24SMS(sendSMSDto);
     }
 
     @Patch()

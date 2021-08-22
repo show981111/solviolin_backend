@@ -6,7 +6,6 @@ import axios from 'axios';
 import { UserService } from 'src/user/user.service';
 import { Verification } from 'src/entities/verification.entity';
 import { InsertResult, UpdateResult } from 'typeorm';
-import { SendSMSDto } from './dto/send-sms.dto';
 
 @Injectable()
 export class VerificationService {
@@ -99,44 +98,5 @@ export class VerificationService {
         } else {
             throw new UnauthorizedException('verification timeout');
         }
-    }
-
-    async cafe24SMS(sendSMSDto: SendSMSDto): Promise<any> {
-        sendSMSDto.from =
-            sendSMSDto.from.substr(0, 3) +
-            '-' +
-            sendSMSDto.from.substr(3, 4) +
-            '-' +
-            sendSMSDto.from.substr(7);
-        for (var i = 0; i < sendSMSDto.to.length; i++) {
-            sendSMSDto.to[i] =
-                sendSMSDto.to[i].substr(0, 3) +
-                '-' +
-                sendSMSDto.to[i].substr(3, 4) +
-                '-' +
-                sendSMSDto.to[i].substr(7);
-        }
-        var url = 'https://sslsms.cafe24.com/sms_sender.php';
-        const body = {
-            user_id: Buffer.from('solviolinsms', 'binary').toString('base64'),
-            secure: Buffer.from('9bc1a3d93f86a56ccb179e117d214370', 'binary').toString('base64'),
-            sphone1: Buffer.from(sendSMSDto.from, 'binary').toString('base64'),
-            sphone2: Buffer.from(sendSMSDto.from, 'binary').toString('base64'),
-            rphone: Buffer.from(sendSMSDto.to.toString(), 'binary').toString('base64'),
-            msg: Buffer.from('test test', 'binary').toString('base64'),
-            testflag: Buffer.from('Y', 'binary').toString('base64'),
-        };
-        var requestFrom: string = `${url}?user_id=${body.user_id}&secure=${body.secure}&sphone1=${body.sphone1}&sphone2=${body.sphone2}&rphone=${body.rphone}&msg=${body.msg}&=testflag=${body.testflag}`;
-        console.log(requestFrom);
-        await axios
-            .post(requestFrom)
-            .then(async (res) => {
-                console.log(res);
-                return res;
-            })
-            .catch((err) => {
-                console.error(err);
-                throw new InternalServerErrorException('fail to send message');
-            });
     }
 }
