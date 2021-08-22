@@ -15,6 +15,7 @@ import { TeacherService } from 'src/teacher/teacher.service';
 import { TermService } from 'src/term/term.service';
 import {
     DeleteResult,
+    getConnection,
     getManager,
     In,
     InsertResult,
@@ -32,6 +33,8 @@ import { Income } from '../interfaces/income.interface';
 import { LinkRepository } from '../repositories/link.repository';
 import { ReservationRepository } from '../repositories/reservation.repository';
 import { ValidateReservationSerivce } from './validateReservation.service';
+import * as fs from 'fs';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class ReservationService extends ValidateReservationSerivce {
@@ -447,5 +450,80 @@ export class ReservationService extends ValidateReservationSerivce {
 
     async deleteReservation(ids: number[]): Promise<DeleteResult> {
         return await this.reservationRepository.delete(ids);
+    }
+
+    async getCanceledCourseByTeacher(teacherID: string): Promise<Reservation[]> {
+        var curAndLastTerm: Term[] = await this.termService.getTerm();
+        var curAndFutureTerm: Term[] = await this.termService.getNextTerm();
+        var lastStartDate: Date = curAndLastTerm[1].termStart;
+        var futureEndDate: Date = curAndFutureTerm[1].termEnd;
+        return await this.reservationRepository
+            .createQueryBuilder()
+            .leftJoin('Reservation.linkFrom', 'linkFrom')
+            .addSelect('linkFrom.toID')
+            .where({
+                teacherID: teacherID,
+                bookingStatus: In([-2, 2]),
+                startDate: MoreThanOrEqual(lastStartDate),
+                endDate: LessThanOrEqual(futureEndDate),
+            })
+            .orderBy('startDate', 'DESC')
+            .getMany();
+    }
+
+    async migrateCancel() {
+        var obj = JSON.parse(
+            fs.readFileSync('/Users/yongseunglee/solviolin/migration/BOOKEDLIST.json', 'utf8'),
+        );
+        var reservationData = obj[2].data;
+        const reservationList: Reservation[] = [];
+
+        const teachers: User[] = await getConnection()
+            .createQueryBuilder()
+            .select('user')
+            .from(User, 'user')
+            .where('user.userType = 1')
+            .getMany();
+        // const users: User[] = await getConnection()
+        //     .createQueryBuilder()
+        //     .select('user')
+        //     .from(User, 'user')
+        //     .where('user.userType != 2')
+        //     .getMany();
+        // var skippedUsers = [];
+        for (var i = 0; i < reservationData.length; i++) {
+            // var isUserExist = 0;
+            // for (var j = 0; j < users.length; j++) {
+            //     if (reservationData[i].userID === users[j].userID) {
+            //         isUserExist = 1;
+            //         break;
+            //     }
+            // }
+            // if (!isUserExist) {
+            //     skippedUsers.push(reservationData[i].userID);
+            // }
+            var isTeacherExist = 0;
+            if (reservationData[i].userID) {
+                const rsrv: Reservation = new Reservation();
+                rsrv.userID = reservationData[i].userID;
+                rsrv.startDate = reservationData[i].startDate;
+                rsrv.endDate = reservationData[i].endDate;
+                rsrv.branchName = reservationData[i].courseBranch;
+                for (var j = 0; j < teachers.length; j++) {
+                    if (reservationData[i].courseTeacher === teachers[j].userName) {
+                        rsrv.teacherID = teachers[j].userID;
+                        isTeacherExist = 1;
+                        break;
+                    }
+                }
+                if (!isTeacherExist) {
+                    return reservationData[i];
+                }
+                rsrv.bookingStatus = 2;
+                reservationList.push(rsrv);
+            }
+        }
+        // return skippedUsers;
+        return await this.reservationRepository.insert(reservationList);
     }
 }

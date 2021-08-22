@@ -5,13 +5,14 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { Teacher } from 'src/entities/teacher.entity';
-import { DeleteResult, InsertResult } from 'typeorm';
+import { DeleteResult, getConnection, InsertResult } from 'typeorm';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { TeacherBranchDto } from '../utils/Teacher-Branch.dto';
 import { TeacherRepository } from './teacher.repository';
 import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.interface';
 import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
-
+import * as fs from 'fs';
+import { User } from 'src/entities/user.entity';
 @Injectable()
 export class TeacherService {
     constructor(private teacherRepository: TeacherRepository) {}
@@ -114,5 +115,75 @@ export class TeacherService {
             branchName: branchName,
             workDow: dow,
         });
+    }
+
+    async migrateSchedule() {
+        var obj = JSON.parse(
+            fs.readFileSync('/Users/yongseunglee/solviolin/migration/COURSETIMELINE.json', 'utf8'),
+        );
+        var courseTimeLines = obj[2].data;
+        const teacherSchedule: Teacher[] = [];
+
+        const teachers: User[] = await getConnection()
+            .createQueryBuilder()
+            .select('user')
+            .from(User, 'user')
+            .where('user.userType = 1')
+            .getMany();
+
+        var tmp = [];
+        for (var i = 0; i < courseTimeLines.length; i++) {
+            if (courseTimeLines[i].courseTeacher) {
+                var userExist = 0;
+                const teacher: Teacher = new Teacher();
+                for (var j = 0; j < teachers.length; j++) {
+                    if (courseTimeLines[i].courseTeacher === teachers[j].userName) {
+                        teacher.teacherID = teachers[j].userID;
+                        userExist = 1;
+                        break;
+                    }
+                }
+                if (!userExist) {
+                    tmp.push(courseTimeLines[i].courseTeacher);
+                    continue;
+                }
+                teacher.startTime = courseTimeLines[i].startTime;
+                teacher.endTime = courseTimeLines[i].endTime;
+                teacher.branchName = courseTimeLines[i].courseBranch;
+                switch (courseTimeLines[i].courseDay) {
+                    case '일': {
+                        teacher.workDow = 0;
+                        break;
+                    }
+                    case '월': {
+                        teacher.workDow = 1;
+                        break;
+                    }
+                    case '화': {
+                        teacher.workDow = 2;
+                        break;
+                    }
+                    case '수': {
+                        teacher.workDow = 3;
+                        break;
+                    }
+                    case '목': {
+                        teacher.workDow = 4;
+                        break;
+                    }
+                    case '금': {
+                        teacher.workDow = 5;
+                        break;
+                    }
+                    case '토': {
+                        teacher.workDow = 6;
+                        break;
+                    }
+                }
+                teacherSchedule.push(teacher);
+            }
+        }
+
+        return await this.teacherRepository.insert(teacherSchedule);
     }
 }

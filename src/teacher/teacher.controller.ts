@@ -88,4 +88,9 @@ export class TeacherController {
     searchTeacherName(@Query() branchDowSearchDto: BranchDowSearchDto): Promise<Teacher[]> {
         return this.teacherService.getNameList(branchDowSearchDto);
     }
+
+    @Post('/migrate') //teacherID or Branch
+    migrateTeacher(): Promise<any> {
+        return this.teacherService.migrateSchedule();
+    }
 }

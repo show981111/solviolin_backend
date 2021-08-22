@@ -289,4 +289,24 @@ export class ReservationController {
     async deleteReservations(@Body('ids') ids: number[]): Promise<DeleteResult> {
         return this.reservationService.deleteReservation(ids);
     }
+
+    @Get('/canceled/:teacherID')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: '해당 선생 이름으로 취소된 수업 리스트업',
+    })
+    @ApiOkResponse({
+        type: [Reservation],
+    })
+    async getCanceledCourseByTeacher(
+        @Param('teacherID') teacherID: string,
+    ): Promise<Reservation[]> {
+        return this.reservationService.getCanceledCourseByTeacher(teacherID);
+    }
+
+    @Post('/migrate/cancel')
+    async migrateCancelled() {
+        return this.reservationService.migrateCancel();
+    }
 }

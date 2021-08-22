@@ -29,6 +29,13 @@ export class SearchUserDto {
     @IsNotEmpty()
     @Type(() => Number)
     @ApiProperty({ required: false })
+    readonly userType?: number;
+
+    @IsInt()
+    @IsOptional()
+    @IsNotEmpty()
+    @Type(() => Number)
+    @ApiProperty({ required: false })
     readonly status?: number;
 
     getSqlString(): string {
@@ -61,6 +68,14 @@ export class SearchUserDto {
                 sqlString = 'User.status = :status';
             }
         }
+
+        if (this.userType !== undefined) {
+            if (sqlString) {
+                sqlString += ' AND User.userType = :userType';
+            } else {
+                sqlString = 'User.userType = :userType';
+            }
+        }
         return sqlString;
     }
 
@@ -69,6 +84,7 @@ export class SearchUserDto {
         if (this.branchName) obj.branchName = this.branchName;
         if (this.userID) obj.userID = this.userID;
         if (this.status !== undefined) obj.status = this.status;
+        if (this.userType !== undefined) obj.userType = this.userType;
         return obj;
     }
 }
