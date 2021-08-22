@@ -18,12 +18,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
 
     catch(exception: unknown, host: ArgumentsHost) {
+        console.log(exception);
         const ctx = host.switchToHttp();
         const response = ctx.getResponse();
         const request = ctx.getRequest();
 
         let message = (exception as any)?.response?.message;
         let error = (exception as any)?.response?.error;
+
+        if (!message) message = exception?.toString();
 
         const status =
             exception instanceof HttpException

@@ -144,10 +144,10 @@ AdminJS.registerAdapter({ Database, Resource });
             provide: APP_INTERCEPTOR,
             useClass: HTTPLoggingInterceptor,
         },
-        // {
-        //     provide: APP_FILTER,
-        //     useClass: AllExceptionsFilter,
-        // },
+        {
+            provide: APP_FILTER,
+            useClass: AllExceptionsFilter,
+        },
         {
             provide: APP_FILTER,
             useClass: TypeOrmExceptionFilter,

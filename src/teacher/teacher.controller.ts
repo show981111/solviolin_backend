@@ -83,7 +83,7 @@ export class TeacherController {
     }
 
     @Get('/search/name') //teacherID or Branch
-    @ApiQuery({ description: 'search option', type: TeacherBranchDto })
+    @ApiQuery({ description: 'search option', type: BranchDowSearchDto })
     @ApiOkResponse({ type: [Teacher] })
     @ApiOperation({ summary: '선생님 이름 리스트 검색' })
     searchTeacherName(@Query() branchDowSearchDto: BranchDowSearchDto): Promise<Teacher[]> {

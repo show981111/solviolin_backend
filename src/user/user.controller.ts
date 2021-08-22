@@ -73,13 +73,14 @@ export class UserController {
         return this.userService.searchUser(searchUserDto);
     }
 
-    @Patch('/reset')
+    @Patch('/admin/reset')
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'reset Password by admin' })
     @UseInterceptors(UpdateResultChecker)
     @ApiNotFoundResponse()
     resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<UpdateResult> {
+        console.log(resetPasswordDto);
         return this.userService.updatePassword(
             resetPasswordDto.userID,
             resetPasswordDto.userPassword,
