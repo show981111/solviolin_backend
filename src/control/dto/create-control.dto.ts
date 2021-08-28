@@ -27,6 +27,8 @@ export class CreateControlDto {
     readonly status: number;
 
     @IsOptionalBasedOn('status')
-    @ApiProperty({ description: '0 : not cancel in close or 1 : cancel in close' })
+    @ApiProperty({
+        description: '0 : not cancel in close / 1 : cancel in close / 2 : delete in close',
+    })
     readonly cancelInClose?: number;
 }

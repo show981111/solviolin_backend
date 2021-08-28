@@ -103,7 +103,7 @@ export class ControlService {
                 console.log(insertRes);
                 if (!insertRes?.raw?.insertId)
                     throw new InternalServerErrorException('control is not inserted');
-                if (cancelCourseInClose) {
+                if (cancelCourseInClose === 1) {
                     await transactionalEntityManager.getRepository(Reservation).update(
                         {
                             teacherID: In(teachers),
@@ -114,6 +114,14 @@ export class ControlService {
                         },
                         { bookingStatus: -2, isControlled: 1 },
                     );
+                } else if (cancelCourseInClose === 2) {
+                    await transactionalEntityManager.getRepository(Reservation).delete({
+                        teacherID: In(teachers),
+                        branchName: createControlDto.branchName,
+                        startDate: MoreThanOrEqual(createControlDto.controlStart),
+                        endDate: LessThan(createControlDto.controlEnd),
+                        bookingStatus: In([0, 1, -1, 3, -3]),
+                    });
                 }
             });
         } else {
