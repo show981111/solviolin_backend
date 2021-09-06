@@ -85,6 +85,7 @@ export class ReservationService extends ValidateReservationSerivce {
             60000;
         var fromList: fromCourseInfo[];
         if (fromAdmin) {
+            userID = createReservationDto.userID;
             const [fromListRes, isTimeLineConflict] = await Promise.all([
                 this.isMakeUpAvailable(
                     userID,

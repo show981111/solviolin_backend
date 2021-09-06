@@ -76,7 +76,7 @@ export class ReservationController {
         @Request() req,
         @Param('id', CheckCancelBefore4h) courseInfo: Reservation,
     ): Promise<UpdateResult> {
-        if (courseInfo.userID !== req?.user?.userID)
+        if (courseInfo.userID !== req?.user?.userID && req?.user?.userType !== 2)
             throw new ForbiddenException("cannot cancel other users' course");
         return this.reservationService.cancelCourseByUser(
             courseInfo.id,
