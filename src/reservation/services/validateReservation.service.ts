@@ -138,7 +138,7 @@ export class ValidateReservationSerivce {
             .getMany();
         var bank = new Map<number, fromToLink>();
         var postPoneUsed = false;
-        console.log('canceledCourseInLastAndCur', canceledCourseInLastAndCur);
+        // console.log('canceledCourseInLastAndCur', canceledCourseInLastAndCur);
         for (var i = 0; i < canceledCourseInLastAndCur.length; i++) {
             var residue = this.getResidueMinute(
                 canceledCourseInLastAndCur[i].from,
@@ -169,10 +169,10 @@ export class ValidateReservationSerivce {
             }
 
             if (bank.has(canceledCourseInLastAndCur[i].fromID)) {
-                console.log(
-                    'to is inserted to ' + canceledCourseInLastAndCur[i].fromID,
-                    canceledCourseInLastAndCur[i].to,
-                );
+                // console.log(
+                //     'to is inserted to ' + canceledCourseInLastAndCur[i].fromID,
+                //     canceledCourseInLastAndCur[i].to,
+                // );
                 //already exist at the bank : push to the "to" Array AND subtract used Time
                 bank.get(canceledCourseInLastAndCur[i].fromID).to.push(
                     canceledCourseInLastAndCur[i].to,
@@ -203,7 +203,7 @@ export class ValidateReservationSerivce {
             var maxDuration: number = 0;
             for (const [key, value] of bank.entries()) {
                 if (value.isCanceledFromLast) {
-                    console.log(key, value.residue);
+                    // console.log(key, value.residue);
                     if (value.residue > maxDuration) {
                         maxDuration = value.residue;
                         bank.delete(previousMax);
@@ -218,7 +218,7 @@ export class ValidateReservationSerivce {
         var fromTotalDuration: number = 0;
 
         for (const [key, value] of bank.entries()) {
-            console.log(key, value);
+            // console.log(key, value);
             if (value.residue === courseDuration) {
                 // 정확히 아다리가 맞는거를 찾으면 그걸로 지정하고 바로 리턴.
                 selectedFromList = [
@@ -230,7 +230,7 @@ export class ValidateReservationSerivce {
                     },
                 ];
                 fromTotalDuration = value.residue;
-                console.log('*********selectedFromList is set to ', value);
+                // console.log('*********selectedFromList is set to ', value);
                 break;
             }
             if (fromTotalDuration < courseDuration && value.residue > 0) {
@@ -243,11 +243,11 @@ export class ValidateReservationSerivce {
                     isFromLast: value.isCanceledFromLast,
                     isToNull: value.to?.length > 0 && value.to[0] ? 0 : 1,
                 });
-                console.log('*********selectedFromList get Value ', value);
+                // console.log('*********selectedFromList get Value ', value);
                 fromTotalDuration += usingDuration;
             }
         }
-        console.log('fromTotalDuration', fromTotalDuration);
+        // console.log('fromTotalDuration', fromTotalDuration);
         if (fromTotalDuration < courseDuration || selectedFromList?.length === 0) {
             //프롬리스트에서 해당 코스 듀레이션을 다 못채우면 보강 시간 부족한것
             throw new PreconditionFailedException(

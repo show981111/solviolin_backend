@@ -6,12 +6,12 @@ export class SearchLedgerItemDto {
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     readonly branchName?: string;
 
     @IsInt()
     @IsNotEmpty()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     @IsOptional()
     @Type(() => Number)
     readonly termID?: number;
@@ -19,6 +19,6 @@ export class SearchLedgerItemDto {
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({ required: false })
     readonly userID?: number;
 }

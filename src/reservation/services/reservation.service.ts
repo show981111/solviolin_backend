@@ -85,6 +85,8 @@ export class ReservationService extends ValidateReservationSerivce {
             60000;
         var fromList: fromCourseInfo[];
         if (fromAdmin) {
+            if (!createReservationDto.userID)
+                throw new BadRequestException('userID should not be null');
             userID = createReservationDto.userID;
             const [fromListRes, isTimeLineConflict] = await Promise.all([
                 this.isMakeUpAvailable(

@@ -88,13 +88,14 @@ describe('AppController (e2e) - RESERVATION', () => {
     });
 
     it('should book a makeUp reservation by user', async () => {
-        var startDate: Date = new Date();
+        var startDate: Date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
         while (startDate.getDay() !== 3) {
             startDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
         }
-        startDate.setHours(12, 0, 0, 0);
+        startDate.setHours(18, 0, 0, 0);
         var endDate: Date = new Date(startDate.getTime() + 30 * 60 * 1000);
         freeCourseStartDate = startDate;
+
         const res = await request(app.getHttpServer())
             .post('/reservation/user')
             .set('Authorization', `Bearer ${token}`)
@@ -161,8 +162,9 @@ describe('AppController (e2e) - RESERVATION', () => {
         while (startDate.getDay() !== 3) {
             startDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
         }
-        startDate.setHours(14, 0, 0, 0);
+        startDate.setUTCHours(17, 0, 0, 0);
         var endDate: Date = new Date(startDate.getTime() + 30 * 60 * 1000);
+
         return await request(app.getHttpServer())
             .post('/reservation/user')
             .set('Authorization', `Bearer ${token}`)

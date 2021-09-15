@@ -27,7 +27,7 @@ describe('AppController (e2e)', () => {
         await app.init();
     });
 
-    it('/ test', async () => {
+    it('test login', async () => {
         return await request(app.getHttpServer())
             .post('/auth/login')
             .send({
