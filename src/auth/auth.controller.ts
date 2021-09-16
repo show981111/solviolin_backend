@@ -36,7 +36,9 @@ export class AuthController {
     @ApiUnauthorizedResponse({ description: '아이디 패스워드 틀림' })
     @ApiNotFoundResponse({ description: '유저 존재하지 않음' })
     async login(@Body() loginDto: LoginDto, @Request() req) {
-        return await this.authService.login(req.user);
+        const res = await this.authService.login(req.user);
+        if(res?.userType == 2 || res?.userType == 1 ) return res;
+        else return;
     }
 
     @UseGuards(JwtAuthGuard)
