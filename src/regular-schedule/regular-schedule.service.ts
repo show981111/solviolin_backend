@@ -123,6 +123,12 @@ export class RegularScheduleService {
             .from(User, 'user')
             .getMany();
 
+        const termList: Term[] = await getConnection()
+            .createQueryBuilder()
+            .select('term')
+            .from(Term, 'term')
+            .getMany();
+
         for (var i = 0; i < reservationData.length; i++) {
             reservationData[i].userID = reservationData[i].userID.replace(' ', '');
             if (reservationData[i].startTime) {
@@ -163,13 +169,24 @@ export class RegularScheduleService {
                         reservationData[i].startDate + ' ' + reservationData[i].startTime;
                 }
                 regular.startDate = reservationData[i].startDate;
-                if (new Date(reservationData[i].startDate) >= new Date('2021-08-28 23:55:00')) {
-                    regular.endDate = new Date('2021-10-02 23:55:00');
-                } else {
-                    regular.endDate = new Date('2021-08-28 23:55:00');
+
+                var termFlag = 0;
+                for (var t = 0; t < termList.length; t++) {
+                    if (
+                        new Date(reservationData[i].startDate) >= termList[t].termStart &&
+                        new Date(reservationData[i].startDate) < termList[t].termEnd
+                    ) {
+                        regular.endDate = termList[t].termEnd;
+                        regular.termID = termList[t].id;
+                        termFlag = 1;
+                        break;
+                    }
                 }
 
-                regular.termID = 3;
+                if (termFlag === 0) {
+                    throw new BadRequestException('CANNOT FOUND TERM ' + reservationData[i].num);
+                }
+
                 regularList.push(regular);
             }
         }

@@ -80,7 +80,7 @@ export class RegularReservationController {
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: '해당지점의 모든 수업을 다음학기로 연장한다',
+        summary: '해당지점의 현재 학기 수업을 다음학기로 연장한다',
         description: '레귤러스케쥴에 termID가 NULL 인것을 제외한 모든 수업이 연장된다',
     })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
