@@ -6,8 +6,8 @@ import { FindOperator, LessThanOrEqual, MoreThanOrEqual, In } from 'typeorm';
 interface searchFilter {
     branchName: string;
     teacherID?: string;
-    startDate?: FindOperator<Date>;
-    endDate?: FindOperator<Date>;
+    controlStart?: FindOperator<Date>;
+    controlEnd?: FindOperator<Date>;
     status?: number;
 }
 
@@ -50,8 +50,8 @@ export class ControlFilterDto {
         };
 
         if (this.teacherID) filter.teacherID = this.teacherID;
-        if (this.controlStart) filter.startDate = MoreThanOrEqual(this.controlStart);
-        if (this.controlEnd) filter.endDate = LessThanOrEqual(this.controlEnd);
+        if (this.controlStart) filter.controlStart = MoreThanOrEqual(this.controlStart);
+        if (this.controlEnd) filter.controlEnd = LessThanOrEqual(this.controlEnd);
         if (this.status === 0 || this.status === 1) filter.status = this.status;
         return filter;
     }

@@ -15,7 +15,9 @@ import {
     Get,
     Query,
     Delete,
+    UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -305,8 +307,11 @@ export class ReservationController {
         return this.reservationService.getCanceledCourseByTeacher(teacherID);
     }
 
-    // @Post('/migrate/cancel')
-    // async migrateCancelled() {
-    //     return this.reservationService.migrateCancel();
-    // }
+    @Post('/migrate/cancel')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @UseInterceptors(FileInterceptor('file'))
+    async migrateCancelled(@UploadedFile() file: Express.Multer.File) {
+        return this.reservationService.migrateCancel(file);
+    }
 }

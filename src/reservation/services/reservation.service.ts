@@ -474,10 +474,11 @@ export class ReservationService extends ValidateReservationSerivce {
             .getMany();
     }
 
-    async migrateCancel() {
-        var obj = JSON.parse(
-            fs.readFileSync('/Users/yongseunglee/solviolin/migration/BOOKEDLIST.json', 'utf8'),
-        );
+    async migrateCancel(file: Express.Multer.File) {
+        // var obj = JSON.parse(
+        //     fs.readFileSync('/Users/yongseunglee/solviolin/migration/BOOKEDLIST.json', 'utf8'),
+        // );
+        var obj = JSON.parse(file.buffer.toString());
         var reservationData = obj[2].data;
         const reservationList: Reservation[] = [];
 

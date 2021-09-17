@@ -102,10 +102,12 @@ export class RegularScheduleService {
         return await this.regularScheduleRepository.delete(id);
     }
 
-    async migrateRegular() {
-        var obj = JSON.parse(
-            fs.readFileSync('/Users/yongseunglee/solviolin/migration/REGULARSCHEDULE.json', 'utf8'),
-        );
+    async migrateRegular(file: Express.Multer.File) {
+        if (!file) throw new BadRequestException('file is empty');
+        var obj = JSON.parse(file.buffer.toString());
+        // var obj = JSON.parse(
+        //     fs.readFileSync('/Users/yongseunglee/solviolin/migration/REGULARSCHEDULE.json', 'utf8'),
+        // );
         var reservationData = obj[2].data;
         var regularList: RegularSchedule[] = [];
 
@@ -120,11 +122,9 @@ export class RegularScheduleService {
             .select('user')
             .from(User, 'user')
             .getMany();
-        var c = 0,
-            e = 0,
-            f = 0,
-            d = 0;
+
         for (var i = 0; i < reservationData.length; i++) {
+            reservationData[i].userID = reservationData[i].userID.replace(' ', '');
             if (reservationData[i].startTime) {
                 var userflag = 0;
                 for (var j = 0; j < users.length; j++) {
@@ -134,42 +134,7 @@ export class RegularScheduleService {
                     }
                 }
                 if (userflag === 0) {
-                    reservationData[i].userID = reservationData[i].userID.replace(' ', '');
-                }
-                if (
-                    reservationData[i].userID === '김현희' ||
-                    reservationData[i].userID === '김종호' ||
-                    reservationData[i].userID === '박은미'
-                )
-                    continue;
-
-                if (
-                    reservationData[i].userID === '조정해' &&
-                    reservationData[i].startTime === '14:00'
-                ) {
-                    c++;
-                    if (c > 1) continue;
-                }
-                if (
-                    reservationData[i].userID === '황인영T' &&
-                    reservationData[i].startTime === '11:30'
-                ) {
-                    d++;
-                    if (d > 1) continue;
-                }
-                if (
-                    reservationData[i].userID === '김지우b' &&
-                    reservationData[i].startTime === '17:00'
-                ) {
-                    e++;
-                    if (e > 1) continue;
-                }
-                if (
-                    reservationData[i].userID === '윤선민' &&
-                    reservationData[i].startTime === '19:30'
-                ) {
-                    f++;
-                    if (f > 1) continue;
+                    throw new BadRequestException('CANNOT FOUND ' + reservationData[i].userID);
                 }
 
                 var flag = 0;
@@ -185,8 +150,7 @@ export class RegularScheduleService {
                     }
                 }
                 if (flag === 0) {
-                    console.log('CANNOT FOUND ' + reservationData[i].num);
-                    return;
+                    throw new BadRequestException('CANNOT FOUND TEACHER ' + reservationData[i].num);
                 }
 
                 regular.userID = reservationData[i].userID;

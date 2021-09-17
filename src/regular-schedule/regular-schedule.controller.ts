@@ -8,7 +8,9 @@ import {
     Request,
     UseInterceptors,
     Post,
+    UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
     ApiBearerAuth,
     ApiNotFoundResponse,
@@ -71,9 +73,11 @@ export class RegularScheduleController {
         );
     }
 
-    // @Post('/migrate')
-    // migrateRegular() {
-    //     console.log('dsa');
-    //     return this.regularScheduleService.migrateRegular();
-    // }
+    @Post('/migrate')
+    @UseInterceptors(FileInterceptor('file'))
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    migrateRegular(@UploadedFile() file: Express.Multer.File) {
+        return this.regularScheduleService.migrateRegular(file);
+    }
 }

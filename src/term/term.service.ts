@@ -41,8 +41,8 @@ export class TermService {
     }
 
     async postTerm(createTermDto: CreateTermDto): Promise<InsertResult> {
-        createTermDto.termStart.setHours(0, 0, 0, 0);
-        createTermDto.termEnd.setHours(23, 55, 0, 0);
+        createTermDto.termStart.setUTCHours(0, 0, 0, 0);
+        createTermDto.termEnd.setUTCHours(23, 55, 0, 0);
         const findConflict = await this.termRepository
             .createQueryBuilder()
             .where(

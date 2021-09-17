@@ -119,10 +119,17 @@ export class TeacherService {
         });
     }
 
-    async migrateSchedule() {
-        var obj = JSON.parse(
-            fs.readFileSync('/Users/yongseunglee/solviolin/migration/COURSETIMELINE.json', 'utf8'),
-        );
+    async migrateSchedule(file: Express.Multer.File) {
+        if (!file) throw new BadRequestException('file is empty');
+        var obj = JSON.parse(file.buffer.toString());
+        // if (!file) {
+        //     obj = JSON.parse(
+        //         fs.readFileSync(
+        //             '/Users/yongseunglee/solviolin/migration/COURSETIMELINE.json',
+        //             'utf8',
+        //         ),
+        //     );
+        // }
         var courseTimeLines = obj[2].data;
         const teacherSchedule: Teacher[] = [];
 

@@ -8,6 +8,8 @@ import {
     Param,
     Query,
     UseGuards,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
@@ -28,6 +30,7 @@ import {
 import { Teacher } from 'src/entities/teacher.entity';
 import { BranchDowSearchDto } from './dto/branch-dow-search.dto';
 import { TeacherID } from 'src/entities/teacherID.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('teacher')
 @UseFilters(TypeOrmExceptionFilter)
@@ -90,8 +93,11 @@ export class TeacherController {
         return this.teacherService.getNameList(branchDowSearchDto);
     }
 
-    // @Post('/migrate') //teacherID or Branch
-    // migrateTeacher(): Promise<any> {
-    //     return this.teacherService.migrateSchedule();
-    // }
+    @Post('/migrate') //teacherID or Branch
+    @UseInterceptors(FileInterceptor('file'))
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    migrateTeacher(@UploadedFile() file: Express.Multer.File): Promise<any> {
+        return this.teacherService.migrateSchedule(file);
+    }
 }
