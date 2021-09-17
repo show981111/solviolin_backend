@@ -28,14 +28,14 @@ export class ControlFilterDto {
     @IsNotEmpty()
     @Type(() => Date)
     @ApiProperty({ required: false })
-    readonly startDate?: Date;
+    readonly controlStart?: Date;
 
     @IsOptional()
     @IsDate()
     @IsNotEmpty()
     @Type(() => Date)
     @ApiProperty({ required: false })
-    readonly endDate?: Date;
+    readonly controlEnd?: Date;
 
     @IsInt()
     @IsIn([0, 1])
@@ -50,8 +50,8 @@ export class ControlFilterDto {
         };
 
         if (this.teacherID) filter.teacherID = this.teacherID;
-        if (this.startDate) filter.startDate = MoreThanOrEqual(this.startDate);
-        if (this.endDate) filter.endDate = LessThanOrEqual(this.endDate);
+        if (this.controlStart) filter.startDate = MoreThanOrEqual(this.controlStart);
+        if (this.controlEnd) filter.endDate = LessThanOrEqual(this.controlEnd);
         if (this.status === 0 || this.status === 1) filter.status = this.status;
         return filter;
     }
