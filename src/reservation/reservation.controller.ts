@@ -16,6 +16,7 @@ import {
     Query,
     Delete,
     UploadedFile,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -293,7 +294,7 @@ export class ReservationController {
     }
 
     @Get('/canceled/:teacherID')
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({
         summary: '해당 선생 이름으로 취소된 수업 리스트업',
@@ -303,7 +304,12 @@ export class ReservationController {
     })
     async getCanceledCourseByTeacher(
         @Param('teacherID') teacherID: string,
+        @Request() req,
     ): Promise<Reservation[]> {
+        console.log(req?.user?.isAdmin);
+        if (req?.user?.isAdmin !== 'admin' && req?.user?.userID !== teacherID) {
+            throw new UnauthorizedException('only admin and teachers themselves can access');
+        }
         return this.reservationService.getCanceledCourseByTeacher(teacherID);
     }
 

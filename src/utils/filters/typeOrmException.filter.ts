@@ -35,6 +35,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
                 if (sqlErrorCode === 1452) {
                     // foreign key constraint fails
                     status = 400;
+                    message = 'element is invalid or not found';
                     if (message.indexOf('branchName') !== -1) {
                         message = 'invalid branchName';
                     } else if (message.indexOf('userID') !== -1) {
@@ -43,6 +44,7 @@ export class TypeOrmExceptionFilter implements ExceptionFilter {
                 } else if (sqlErrorCode === 1062) {
                     // conflict
                     status = 409;
+                    message = 'element already exist or conflicted with other resources';
                     if (message.indexOf('user') !== -1) {
                         message = 'userID or userPhone already exist';
                     }
