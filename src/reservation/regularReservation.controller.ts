@@ -8,7 +8,15 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConflictResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBadRequestResponse,
+    ApiBearerAuth,
+    ApiConflictResponse,
+    ApiNotFoundResponse,
+    ApiOperation,
+    ApiPreconditionFailedResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { CreateRegularDto } from 'src/regular-schedule/dto/create-regular.dto';
 import { CreateTermDto } from 'src/term/dto/create-term.dto';
@@ -38,6 +46,7 @@ export class RegularReservationController {
         description: '레귤러에 등록하고 현재 텀에 예약 등록',
     })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
+    @ApiPreconditionFailedResponse({ description: 'teacher is not working at the time' })
     postRegularSchedule(@Body() createRegularDto: CreateRegularDto): Promise<InsertResult> {
         return this.regularReservationService.registerRegularAndReservation(createRegularDto);
     }
@@ -49,6 +58,7 @@ export class RegularReservationController {
     @ApiOperation({
         summary: '정기예약 종료 날짜를 업데이트하고 그 이후 수업은 다 삭제한다.',
     })
+    @ApiNotFoundResponse({ description: 'regular schedule not found' })
     closeRegularSchedule(
         @Param('id') id: number,
         @Body() updateEndRegularDto: UpdateEndRegularDto,
@@ -67,6 +77,7 @@ export class RegularReservationController {
         description: '레귤러스케쥴에 termID가 NULL 인것을 제외한 모든 수업이 연장된다.',
     })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
+    @ApiNotFoundResponse({ description: 'next term is not registered' })
     extendRegularSchedule(@Param('branch') branchName: string): Promise<InsertResult> {
         return this.regularReservationService.extendToNextTerm(
             {
@@ -108,6 +119,7 @@ export class RegularReservationController {
         description:
             '학기를 잘못입력할 경우 학기를 수정한다. 기존의 학기에 있던 수업들은 삭제된다. 이거 하고나서 다음학기로 연장하면 됨.',
     })
+    @ApiBadRequestResponse({ description: 'only next term can be updated' })
     updateTermAndClearReservation(@Param('id') id: number, @Body() createTermDto: CreateTermDto) {
         createTermDto.termStart.setHours(0, 0, 0, 0);
         createTermDto.termEnd.setHours(23, 55, 0, 0);

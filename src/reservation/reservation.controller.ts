@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+    ApiBadRequestResponse,
     ApiBearerAuth,
     ApiBody,
     ApiConflictResponse,
@@ -97,6 +98,7 @@ export class ReservationController {
     })
     @ApiParam({ name: 'id', type: 'string', description: 'reservation id to cancel' })
     @ApiUnauthorizedResponse()
+    @ApiNotFoundResponse({ description: 'course not found' })
     cancelByAdmin(@Param('id') id: number): Promise<UpdateResult> {
         return this.reservationService.cancelCourseByAdmin(id);
     }
@@ -111,7 +113,12 @@ export class ReservationController {
             '1.해당 시간대 수업가능한지 체크(선생시간대와 비교) 2.다른수업과 안겹치나 3.취소한 수업 있나',
     })
     @ApiCreatedResponse({ type: [InsertResult], description: '생성.' })
-    @ApiPreconditionFailedResponse({ description: 'time slot is closed' })
+    @ApiBadRequestResponse({
+        description: 'booking course is possible until before 4 hour OR timeline not matched',
+    })
+    @ApiPreconditionFailedResponse({
+        description: 'time slot is closed OR user should cancel more classes',
+    })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
     @ApiUnauthorizedResponse()
     reserveMakeUpCourseByUser(
@@ -135,7 +142,7 @@ export class ReservationController {
         description: '1.다른수업과 안겹치나 2.취소한 수업 있나',
     })
     @ApiCreatedResponse({ type: [InsertResult], description: '생성.' })
-    @ApiPreconditionFailedResponse({ description: 'time slot is closed' })
+    @ApiPreconditionFailedResponse({ description: 'user should cancel more classes' })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
     @ApiUnauthorizedResponse()
     reserveMakeUpCourseByAdmin(
@@ -173,8 +180,13 @@ export class ReservationController {
         summary: '유저가 수업 연장(15분)',
         description: '1.해당 시간대 수업 가능한지 2.취소한 수업이 있어서 연장 가능한지 체크',
     })
+    @ApiBadRequestResponse({
+        description: 'extending course is possible until before 4 hour OR timeline not matched',
+    })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other course' })
+    @ApiPreconditionFailedResponse({ description: 'time slot is not available' })
     @ApiForbiddenResponse({ description: "cannot extend other users' course" })
+    @ApiMethodNotAllowedResponse({ description: 'canceled course is not allowed to extend' })
     @ApiNotFoundResponse({ description: 'course not found' })
     extendCourseByUser(
         @Param('id') courseInfo: Reservation,
