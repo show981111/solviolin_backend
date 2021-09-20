@@ -49,9 +49,11 @@ export class ReservationService extends ValidateReservationSerivce {
         super(reservationRepository, linkRepository, termService, regularScheduleService);
     }
 
-    async cancelCourseByAdmin(id: number): Promise<UpdateResult> {
+    async cancelCourseByAdmin(id: number, count: number): Promise<UpdateResult> {
+        var status = -2;
+        if (count) status = 2;
         return await this.reservationRepository.update(id, {
-            bookingStatus: -2,
+            bookingStatus: status,
         });
     }
 

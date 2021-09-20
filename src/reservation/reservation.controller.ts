@@ -89,7 +89,7 @@ export class ReservationController {
         );
     }
 
-    @Patch('/admin/cancel/:id')
+    @Patch('/admin/cancel/:id/:count')
     @UseGuards(JwtAdminGuard)
     @UseInterceptors(UpdateResultChecker)
     @ApiBearerAuth()
@@ -99,8 +99,8 @@ export class ReservationController {
     @ApiParam({ name: 'id', type: 'string', description: 'reservation id to cancel' })
     @ApiUnauthorizedResponse()
     @ApiNotFoundResponse({ description: 'course not found' })
-    cancelByAdmin(@Param('id') id: number): Promise<UpdateResult> {
-        return this.reservationService.cancelCourseByAdmin(id);
+    cancelByAdmin(@Param('id') id: number, @Param('count') count: number): Promise<UpdateResult> {
+        return this.reservationService.cancelCourseByAdmin(id, count);
     }
 
     @Post('/user')
