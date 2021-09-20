@@ -47,13 +47,13 @@ export class ControlController {
     @ApiUnauthorizedResponse()
     @ApiOperation({ summary: '컨트롤 등록' })
     createControl(@Body() createControlDto: CreateControlDto) {
-        if (
-            createControlDto.status === 1 &&
-            createControlDto.cancelInClose !== 0 &&
-            createControlDto.cancelInClose !== 1
-        ) {
-            throw new BadRequestException('Close Control should define cancleInClose(0 or 1)');
-        }
+        // if (
+        //     createControlDto.status === 1 &&
+        //     createControlDto.cancelInClose !== 0 &&
+        //     createControlDto.cancelInClose !== 1
+        // ) {
+        //     throw new BadRequestException('Close Control should define cancleInClose(0 or 1)');
+        // }
         return this.controlService.createControl(createControlDto, createControlDto.cancelInClose);
     }
 

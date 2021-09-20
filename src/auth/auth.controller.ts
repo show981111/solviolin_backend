@@ -41,7 +41,8 @@ export class AuthController {
             res?.userType == 2 ||
             res?.userType == 1 ||
             res?.userID === '이지민b' ||
-            res?.userID === 'sleep1'
+            res?.userID === 'sleep1' ||
+            res?.userID === 'sleep9'
         )
             return res;
         else return;
