@@ -19,7 +19,7 @@ export class ValidateReservationTime implements PipeTransform {
     ) {}
     async transform(input: any, metadata: ArgumentMetadata) {
         if (
-            new Date(input.startDate.getTime() - 4 * 60000) <
+            new Date(input.startDate.getTime() - 4 * 60 * 60 * 1000) <
             new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
         ) {
             throw new BadRequestException('reservation is possible until before 4 hour');

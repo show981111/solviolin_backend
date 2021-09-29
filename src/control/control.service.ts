@@ -66,7 +66,7 @@ export class ControlService {
     async createControl(
         createControlDto: CreateControlDto,
         cancelCourseInClose: number,
-    ): Promise<InsertResult> {
+    ): Promise<InsertResult | (InsertResult | UpdateResult | DeleteResult)[]> {
         var controlList = [];
         var teachers = [createControlDto.teacherID];
         if (createControlDto.teacherID === 'all') {
@@ -88,7 +88,7 @@ export class ControlService {
         }
         var res;
         if (createControlDto.status === 1) {
-            await getManager().transaction(async (transactionalEntityManager) => {
+            res = await getManager().transaction(async (transactionalEntityManager) => {
                 var insertRes = await transactionalEntityManager
                     .getRepository(Control)
                     .createQueryBuilder()
@@ -99,30 +99,34 @@ export class ControlService {
                         overwrite: ['status'],
                     })
                     .execute();
-                res = insertRes;
-                console.log(insertRes);
                 if (!insertRes?.raw?.insertId)
                     throw new InternalServerErrorException('control is not inserted');
+                var deleteOrUpdateRes;
                 if (cancelCourseInClose === 1) {
-                    await transactionalEntityManager.getRepository(Reservation).update(
-                        {
+                    deleteOrUpdateRes = await transactionalEntityManager
+                        .getRepository(Reservation)
+                        .update(
+                            {
+                                teacherID: In(teachers),
+                                branchName: createControlDto.branchName,
+                                startDate: MoreThanOrEqual(createControlDto.controlStart),
+                                endDate: LessThanOrEqual(createControlDto.controlEnd),
+                                bookingStatus: In([0, 1, -1, 3, -3]),
+                            },
+                            { bookingStatus: -2, isControlled: 1 },
+                        );
+                } else if (cancelCourseInClose === 2) {
+                    deleteOrUpdateRes = await transactionalEntityManager
+                        .getRepository(Reservation)
+                        .delete({
                             teacherID: In(teachers),
                             branchName: createControlDto.branchName,
                             startDate: MoreThanOrEqual(createControlDto.controlStart),
-                            endDate: LessThan(createControlDto.controlEnd),
+                            endDate: LessThanOrEqual(createControlDto.controlEnd),
                             bookingStatus: In([0, 1, -1, 3, -3]),
-                        },
-                        { bookingStatus: -2, isControlled: 1 },
-                    );
-                } else if (cancelCourseInClose === 2) {
-                    await transactionalEntityManager.getRepository(Reservation).delete({
-                        teacherID: In(teachers),
-                        branchName: createControlDto.branchName,
-                        startDate: MoreThanOrEqual(createControlDto.controlStart),
-                        endDate: LessThan(createControlDto.controlEnd),
-                        bookingStatus: In([0, 1, -1, 3, -3]),
-                    });
+                        });
                 }
+                return [insertRes, deleteOrUpdateRes];
             });
         } else {
             res = await this.controlRepository

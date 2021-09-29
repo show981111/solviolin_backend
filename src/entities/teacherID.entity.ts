@@ -14,6 +14,10 @@ export class TeacherID extends BaseEntity {
     @ApiProperty({})
     color: string;
 
+    @Column({ type: 'datetime', nullable: true })
+    @ApiProperty({})
+    endDate: Date;
+
     @OneToMany((type) => Teacher, (Teacher) => Teacher.teacher)
     teachers: Teacher[];
 

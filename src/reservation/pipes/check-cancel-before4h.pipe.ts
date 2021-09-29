@@ -23,7 +23,7 @@ export class CheckCancelBefore4h implements PipeTransform {
         if (res.bookingStatus == 2 || res.bookingStatus == -2)
             throw new MethodNotAllowedException('course is already canceled');
         if (
-            new Date(res.startDate.getTime() - 4 * 60000) <
+            new Date(res.startDate.getTime() - 4 * 60 * 60 * 1000) <
             new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
         )
             throw new BadRequestException('reservation is possible until before 4 hour');

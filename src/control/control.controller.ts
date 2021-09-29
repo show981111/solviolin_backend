@@ -27,6 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { Control } from 'src/entities/control.entity';
 import { ControlFilterDto } from './dto/search-control.dto';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 
 @Controller('control')
 @UseFilters(TypeOrmExceptionFilter)
@@ -46,14 +47,17 @@ export class ControlController {
     @ApiBearerAuth()
     @ApiUnauthorizedResponse()
     @ApiOperation({ summary: '컨트롤 등록' })
-    createControl(@Body() createControlDto: CreateControlDto) {
-        // if (
-        //     createControlDto.status === 1 &&
-        //     createControlDto.cancelInClose !== 0 &&
-        //     createControlDto.cancelInClose !== 1
-        // ) {
-        //     throw new BadRequestException('Close Control should define cancleInClose(0 or 1)');
-        // }
+    createControl(
+        @Body() createControlDto: CreateControlDto,
+    ): Promise<InsertResult | (InsertResult | UpdateResult | DeleteResult)[]> {
+        if (
+            createControlDto.status === 1 &&
+            createControlDto.cancelInClose !== 0 &&
+            createControlDto.cancelInClose !== 1 &&
+            createControlDto.cancelInClose !== 2
+        ) {
+            throw new BadRequestException('Close Control should define cancleInClose(0,1,2)');
+        }
         return this.controlService.createControl(createControlDto, createControlDto.cancelInClose);
     }
 

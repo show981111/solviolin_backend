@@ -51,6 +51,7 @@ export class TeacherService {
             .where(query)
             .leftJoin('Teacher.teacher', 'teacher.teacherID')
             .addSelect('teacher.teacherID.color')
+            .addSelect('teacher.teacherID.endDate')
             .groupBy('Teacher.teacherID')
             .getMany();
     }

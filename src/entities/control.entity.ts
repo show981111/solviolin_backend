@@ -58,11 +58,21 @@ export class Control extends BaseEntity {
     @ApiProperty({ description: '0 is open, 1 is closed' })
     status: number;
 
+    @Column({ type: 'tinyint', nullable: true })
+    @ApiProperty({
+        description: '0 : not cancel or delete, 1 : cancel, 2 : delete',
+        required: false,
+    })
+    cancelInClose?: number;
+
     setControl(createControlDto: CreateControlDto): void {
         this.controlStart = createControlDto.controlStart;
         this.controlEnd = createControlDto.controlEnd;
         this.branchName = createControlDto.branchName;
         this.teacherID = createControlDto.teacherID;
         this.status = createControlDto.status;
+        if (createControlDto.status == 1) {
+            this.cancelInClose = createControlDto.cancelInClose;
+        }
     }
 }

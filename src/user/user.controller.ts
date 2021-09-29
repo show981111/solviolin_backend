@@ -28,10 +28,11 @@ import { JwtAdminGuard } from 'src/auth/guards/jwt-admin.guard';
 import { User } from 'src/entities/user.entity';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { UpdateResultChecker } from 'src/utils/interceptors/updateResultChecker.interceptor';
-import { UpdateResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SearchUserDto } from './dto/search-user-query.dto';
+import { TerminateTeacherDto } from './dto/terminate-teacher.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
@@ -80,11 +81,22 @@ export class UserController {
     @UseInterceptors(UpdateResultChecker)
     @ApiNotFoundResponse()
     resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<UpdateResult> {
-        console.log(resetPasswordDto);
         return this.userService.updatePassword(
             resetPasswordDto.userID,
             resetPasswordDto.userPassword,
         );
+    }
+
+    @Patch('/terminate/teacher')
+    @UseGuards(JwtAdminGuard)
+    @ApiBearerAuth()
+    @ApiBody({ type: TerminateTeacherDto })
+    @ApiOperation({ summary: 'terminate teacher' })
+    @ApiNotFoundResponse()
+    terminateTeacher(
+        @Body() terminateTeacherDto: TerminateTeacherDto,
+    ): Promise<(UpdateResult | DeleteResult)[]> {
+        return this.userService.terminateTeacher(terminateTeacherDto);
     }
 
     // @Get('/migrate/:branch')

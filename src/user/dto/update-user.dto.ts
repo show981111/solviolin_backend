@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+    IsHexColor,
+    IsIn,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+} from 'class-validator';
 import { User } from 'src/entities/user.entity';
 import { IsValidPhoneNumber } from 'src/utils/validators/validate-phone.decorator';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -41,6 +50,12 @@ export class UpdateUserDto {
     @IsNotEmpty()
     @ApiProperty({ required: false })
     readonly token?: string;
+
+    @IsHexColor()
+    @IsOptional()
+    @IsNotEmpty()
+    @ApiProperty({ required: false })
+    readonly color?: string;
 
     getBody(): QueryDeepPartialEntity<User> {
         let body: QueryDeepPartialEntity<User> = {};

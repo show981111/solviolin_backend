@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { DeleteResult, InsertResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, getManager, InsertResult, Repository, UpdateResult } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,10 +8,18 @@ import { UserRepository } from './user.repository';
 import { SearchUserDto } from './dto/search-user-query.dto';
 import { TermService } from 'src/term/term.service';
 import * as fs from 'fs';
+import { TerminateTeacherDto } from './dto/terminate-teacher.dto';
+import { TeacherID } from 'src/entities/teacherID.entity';
+import { TeacherIDRepository } from './teacherID.repository';
+import { Teacher } from 'src/entities/teacher.entity';
 
 @Injectable()
 export class UserService {
-    constructor(private usersRepository: UserRepository, private termService: TermService) {}
+    constructor(
+        private usersRepository: UserRepository,
+        private termService: TermService,
+        private teacherIDRepository: TeacherIDRepository,
+    ) {}
 
     async create(createUserDto: CreateUserDto): Promise<InsertResult> {
         const user = new User();
@@ -61,8 +69,10 @@ export class UserService {
     }
 
     async updateInfo(userID: string, updateUserDto: UpdateUserDto): Promise<UpdateResult> {
-        console.log(updateUserDto.getBody());
         if (updateUserDto.isEmpty()) throw new BadRequestException('Empty body');
+        if (updateUserDto.color) {
+            await this.teacherIDRepository.update(userID, { color: updateUserDto.color });
+        }
         return this.usersRepository.update(userID, updateUserDto.getBody());
     }
 
@@ -125,5 +135,29 @@ export class UserService {
         }
 
         return await this.usersRepository.insert(userList);
+    }
+
+    async terminateTeacher(
+        terminateTeacherDto: TerminateTeacherDto,
+    ): Promise<(UpdateResult | DeleteResult)[]> {
+        var final = await getManager().transaction(async (transactionalEntityManager) => {
+            var updateRes = await transactionalEntityManager
+                .getRepository(User)
+                .update({ userID: terminateTeacherDto.teacherID }, { status: 0 });
+            if (updateRes?.affected <= 0) throw new NotFoundException('TeacherID Not Found');
+
+            var updateRes1 = await transactionalEntityManager.getRepository(TeacherID).update(
+                {
+                    teacherID: terminateTeacherDto.teacherID,
+                },
+                { endDate: terminateTeacherDto.endDate },
+            );
+
+            var deleteRes = await transactionalEntityManager
+                .getRepository(Teacher)
+                .delete({ teacherID: terminateTeacherDto.teacherID });
+            return [updateRes, updateRes1, deleteRes];
+        });
+        return final;
     }
 }
