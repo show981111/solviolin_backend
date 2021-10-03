@@ -99,6 +99,13 @@ export class UserController {
         return this.userService.terminateTeacher(terminateTeacherDto);
     }
 
+    @Patch('/initialize/credit')
+    @UseGuards(JwtAdminGuard)
+    @ApiOperation({ summary: 'initialize credit for all registered students' })
+    initializeCredit(): Promise<UpdateResult> {
+        return this.userService.initializeCredit();
+    }
+
     // @Get('/migrate/:branch')
     // migrateUser(@Param('branch') branchName: string) {
     //     return this.userService.migrateUserDate(branchName);

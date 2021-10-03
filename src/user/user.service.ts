@@ -137,6 +137,10 @@ export class UserService {
         return await this.usersRepository.insert(userList);
     }
 
+    /**
+     * 1. update status to 0 at user db
+     * 2. delete all schedule for teacher
+     */
     async terminateTeacher(
         terminateTeacherDto: TerminateTeacherDto,
     ): Promise<(UpdateResult | DeleteResult)[]> {
@@ -159,5 +163,9 @@ export class UserService {
             return [updateRes, updateRes1, deleteRes];
         });
         return final;
+    }
+
+    async initializeCredit(): Promise<UpdateResult> {
+        return await this.usersRepository.update({ status: 1, userType: 0 }, { userCredit: 2 });
     }
 }
