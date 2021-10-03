@@ -415,10 +415,11 @@ export class ReservationService extends ValidateReservationSerivce {
             startDate: MoreThanOrEqual(termInfo.termStart),
             endDate: LessThanOrEqual(termInfo.termEnd),
             bookingStatus: In([-3, -1, 0, 1, 3]),
-            userID: Not('break'),
         });
         var incomeMap = new Map<string, Income>();
         for (var i = 0; i < courseInCondtion.length; i++) {
+            if (courseInCondtion[i].teacherID === courseInCondtion[i].userID) continue; //if teachers booked themselves, skip
+
             var duration: number =
                 (courseInCondtion[i].endDate.getTime() - courseInCondtion[i].startDate.getTime()) /
                 60000;
