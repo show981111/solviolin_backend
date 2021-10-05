@@ -73,11 +73,15 @@ export class RegularScheduleController {
         );
     }
 
-    @Post('/migrate')
+    @Post('/migrate/:termID/:nextTermID')
     @UseInterceptors(FileInterceptor('file'))
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
-    migrateRegular(@UploadedFile() file: Express.Multer.File) {
-        return this.regularScheduleService.migrateRegular(file);
+    migrateRegular(
+        @UploadedFile() file: Express.Multer.File,
+        @Param('termID') termID: number,
+        @Param('nextTermID') nextTermID: number,
+    ) {
+        return this.regularScheduleService.migrateRegular(file, termID, nextTermID);
     }
 }

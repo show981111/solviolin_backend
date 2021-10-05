@@ -102,7 +102,7 @@ export class RegularScheduleService {
         return await this.regularScheduleRepository.delete(id);
     }
 
-    async migrateRegular(file: Express.Multer.File) {
+    async migrateRegular(file: Express.Multer.File, termID: number, nextTermID: number) {
         if (!file) throw new BadRequestException('file is empty');
         var obj = JSON.parse(file.buffer.toString());
         // var obj = JSON.parse(
@@ -123,15 +123,36 @@ export class RegularScheduleService {
             .from(User, 'user')
             .getMany();
 
-        const termList: Term[] = await getConnection()
+        const termInfo: Term[] = await getConnection()
             .createQueryBuilder()
             .select('term')
             .from(Term, 'term')
+            .where('term.id = :termID || term.id = :nextTermID', {
+                termID: termID,
+                nextTermID: nextTermID,
+            })
+            .orderBy('term.id', 'ASC')
             .getMany();
 
+        console.log(termInfo);
+
+        if (termInfo.length != 2) throw new BadRequestException('term is invalid');
+        var newUserList: string[] = [];
+        var newTeacherList: string[] = [];
         for (var i = 0; i < reservationData.length; i++) {
             reservationData[i].userID = reservationData[i].userID.replace(' ', '');
+            reservationData[i].courseTeacher = reservationData[i].courseTeacher.replace(' ', '');
+            if (reservationData[i].userID[reservationData[i].userID.length - 1] == 'T') {
+                reservationData[i].userID = reservationData[i].userID.substring(
+                    0,
+                    reservationData[i].userID.length - 1,
+                );
+            }
             if (reservationData[i].startTime) {
+                if (new Date(reservationData[i].startDate) > new Date(termInfo[1].termEnd)) {
+                    continue;
+                }
+
                 var userflag = 0;
                 for (var j = 0; j < users.length; j++) {
                     if (users[j].userID === reservationData[i].userID) {
@@ -140,7 +161,8 @@ export class RegularScheduleService {
                     }
                 }
                 if (userflag === 0) {
-                    throw new BadRequestException('CANNOT FOUND ' + reservationData[i].userID);
+                    newUserList.push(reservationData[i].userID);
+                    //throw new BadRequestException('CANNOT FOUND ' + reservationData[i].userID);
                 }
 
                 var flag = 0;
@@ -156,7 +178,7 @@ export class RegularScheduleService {
                     }
                 }
                 if (flag === 0) {
-                    throw new BadRequestException('CANNOT FOUND TEACHER ' + reservationData[i].num);
+                    newTeacherList.push(reservationData[i].courseTeacher);
                 }
 
                 regular.userID = reservationData[i].userID;
@@ -169,28 +191,34 @@ export class RegularScheduleService {
                         reservationData[i].startDate + ' ' + reservationData[i].startTime;
                 }
                 regular.startDate = reservationData[i].startDate;
-
-                var termFlag = 0;
-                for (var t = 0; t < termList.length; t++) {
-                    if (
-                        new Date(reservationData[i].startDate) >= termList[t].termStart &&
-                        new Date(reservationData[i].startDate) < termList[t].termEnd
-                    ) {
-                        regular.endDate = termList[t].termEnd;
-                        regular.termID = termList[t].id;
-                        termFlag = 1;
-                        break;
-                    }
+                regular.endDate = termInfo[0].termEnd;
+                if (new Date(regular.startDate) > new Date(regular.endDate)) {
+                    regular.endDate = termInfo[1].termEnd;
                 }
 
-                if (termFlag === 0) {
-                    throw new BadRequestException('CANNOT FOUND TERM ' + reservationData[i].num);
+                if (regular.startDate >= regular.endDate) {
+                    return regular;
                 }
+
+                regular.termID = termInfo[0].id;
 
                 regularList.push(regular);
             }
         }
-        return this.regularScheduleRepository.insert(regularList);
+        if (newUserList.length > 0 || newTeacherList.length > 0) {
+            console.log(
+                'CANNOT FOUND ' + newUserList.toString() + '\n' + newTeacherList.toString(),
+            );
+            // throw new BadRequestException(
+            //     'CANNOT FOUND ' + newUserList.toString() + '\n' + newTeacherList.toString(),
+            // );
+        }
+        return this.regularScheduleRepository
+            .createQueryBuilder()
+            .insert()
+            .values(regularList)
+            .orIgnore()
+            .execute();
 
         // insert(regularList);
     }

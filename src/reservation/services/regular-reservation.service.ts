@@ -127,10 +127,17 @@ export class RegularReservationService extends ValidateReservationSerivce {
     async extendToNextTerm(
         condition: FindConditions<RegularSchedule>,
         checkConflict: Boolean,
+        from?: number,
     ): Promise<InsertResult> {
         const termList = await this.termService.getNextTerm();
-        const curTerm = termList[0];
-        const nextTerm = termList[1];
+        var curTerm: Term;
+        var nextTerm: Term;
+        curTerm = termList[0];
+        nextTerm = termList[1];
+        if (from) {
+            curTerm = await this.termService.getTermById(from);
+            nextTerm = await this.termService.getTermById(from + 1);
+        }
         condition.termID = curTerm.id;
         const regularList = await this.regularScheduleService.getExtendCandidates(condition); //regular schedule list that needed to be extended. not updated yet.
         nextTerm.termStart.setUTCHours(0, 0, 0, 0); //텀아이디가 현재텀인 수업들을 다음텀의 시작부터 끝까지 예약 잡고 레귤러의 엔드데이트를 다음텀 종료일로, 텀아이디를 다음텀 아이디로 업데이트
@@ -144,6 +151,9 @@ export class RegularReservationService extends ValidateReservationSerivce {
         var reservationList: Reservation[] = [];
         for (var i = 0; i < regularList.length; i++) {
             var firstStartDate = new Date(dowToStartDateMap.get(regularList[i].dow).valueOf());
+            if (firstStartDate.getDate() < regularList[i].startDate.getDate()) {
+                firstStartDate = regularList[i].startDate;
+            }
             var rsrvListPerRegular = await this.regularToReservationList(
                 regularList[i],
                 firstStartDate,

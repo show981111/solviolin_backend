@@ -100,18 +100,26 @@ export class UserService {
         return users;
     }
 
-    async migrateUserDate(branchName: string) {
-        var obj = JSON.parse(
-            fs.readFileSync('/Users/yongseunglee/solviolin/migration/USER.json', 'utf8'),
-        );
+    async migrateUserDate(file: Express.Multer.File, branchName: string) {
+        // var obj = JSON.parse(
+        //     fs.readFileSync('/Users/yongseunglee/solviolin/migration/USER.json', 'utf8'),
+        // );
+        if (!file) throw new BadRequestException('file is empty');
+        var obj = JSON.parse(file.buffer.toString());
         var userData = obj[2].data;
         const userList: User[] = [];
-
+        console.log(userData.length);
         for (var i = 0; i < userData.length; i++) {
             if (branchName !== userData[i].userBranch) continue;
 
-            if (userData[i].userID && userData[i].status === '') {
+            if (userData[i].userID) {
                 const user: User = new User();
+                if (userData[i].userID[userData[i].userID.length - 1] == 'T') {
+                    userData[i].userID = userData[i].userID.substring(
+                        0,
+                        userData[i].userID.length - 1,
+                    );
+                }
                 user.userID = userData[i].userID;
                 user.userName = userData[i].userName;
                 var phone: string = userData[i].userPhone;
@@ -134,7 +142,14 @@ export class UserService {
             }
         }
 
-        return await this.usersRepository.insert(userList);
+        console.log(userList.length);
+        // return userList;
+        return await this.usersRepository
+            .createQueryBuilder()
+            .insert()
+            .values(userList)
+            .orIgnore()
+            .execute();
     }
 
     /**

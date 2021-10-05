@@ -9,7 +9,9 @@ import {
     Get,
     Query,
     UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
     ApiBadRequestResponse,
     ApiBearerAuth,
@@ -106,8 +108,11 @@ export class UserController {
         return this.userService.initializeCredit();
     }
 
-    // @Get('/migrate/:branch')
-    // migrateUser(@Param('branch') branchName: string) {
-    //     return this.userService.migrateUserDate(branchName);
-    // }
+    @Post('/migrate/:branch')
+    @UseInterceptors(FileInterceptor('file'))
+    @UseGuards(JwtAdminGuard)
+    migrateUser(@UploadedFile() file: Express.Multer.File, @Param('branch') branchName: string) {
+        console.log('hi');
+        return this.userService.migrateUserDate(file, branchName);
+    }
 }
