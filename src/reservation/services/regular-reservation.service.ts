@@ -151,7 +151,9 @@ export class RegularReservationService extends ValidateReservationSerivce {
         var reservationList: Reservation[] = [];
         for (var i = 0; i < regularList.length; i++) {
             var firstStartDate = new Date(dowToStartDateMap.get(regularList[i].dow).valueOf());
-            if (firstStartDate.getDate() < regularList[i].startDate.getDate()) {
+            var copyStartDate = new Date(regularList[i].startDate.valueOf());
+            copyStartDate.setUTCHours(0, 0, 0, 0);
+            if (firstStartDate < copyStartDate) {
                 firstStartDate = regularList[i].startDate;
             }
             var rsrvListPerRegular = await this.regularToReservationList(
