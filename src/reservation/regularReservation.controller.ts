@@ -53,7 +53,6 @@ export class RegularReservationController {
 
     @Patch('/regular/:id')
     @UseGuards(JwtAdminGuard)
-    @UseInterceptors(DeleteResultChecker)
     @ApiBearerAuth()
     @ApiOperation({
         summary: '정기예약 종료 날짜를 업데이트하고 그 이후 수업은 다 삭제한다.',
@@ -87,7 +86,7 @@ export class RegularReservationController {
         );
     }
 
-    @Post('/regular/extend/:branch/:from')
+    @Post('/regular/extend/term/:branch/:from')
     @UseGuards(JwtAdminGuard)
     @ApiBearerAuth()
     @ApiOperation({

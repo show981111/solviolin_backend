@@ -531,6 +531,11 @@ export class ReservationService extends ValidateReservationSerivce {
             }
         }
         // return skippedUsers;
-        return await this.reservationRepository.createQueryBuilder().insert().values(reservationList).orIgnore().execute();
+        return await this.reservationRepository
+            .createQueryBuilder()
+            .insert()
+            .values(reservationList)
+            .orIgnore()
+            .execute();
     }
 }
