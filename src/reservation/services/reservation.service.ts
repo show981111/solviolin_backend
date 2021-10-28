@@ -96,6 +96,7 @@ export class ReservationService extends ValidateReservationSerivce {
                     courseDuration,
                     createReservationDto.startDate,
                     createReservationDto.endDate,
+                    fromAdmin,
                 ),
                 this.isTimeLineConflict(
                     [createReservationDto.startDate],
@@ -425,7 +426,11 @@ export class ReservationService extends ValidateReservationSerivce {
                 60000;
 
             if (incomeMap.has(courseInCondtion[i].teacherID)) {
-                if (courseInCondtion[i].startDate.getHours() < 16) {
+                if (
+                    courseInCondtion[i].startDate.getHours() < 16 &&
+                    courseInCondtion[i].startDate.getDay() != 0 &&
+                    courseInCondtion[i].startDate.getDay() != 6
+                ) {
                     incomeMap.get(courseInCondtion[i].teacherID).dayTime += duration;
                     incomeMap.get(courseInCondtion[i].teacherID).income +=
                         (duration * calculateIncomeDto.dayTimeCost) / 60;
@@ -435,7 +440,11 @@ export class ReservationService extends ValidateReservationSerivce {
                         (duration * calculateIncomeDto.nightTimeCost) / 60;
                 }
             } else {
-                if (courseInCondtion[i].startDate.getHours() < 16) {
+                if (
+                    courseInCondtion[i].startDate.getHours() < 16 &&
+                    courseInCondtion[i].startDate.getDay() != 0 &&
+                    courseInCondtion[i].startDate.getDay() != 6
+                ) {
                     incomeMap.set(courseInCondtion[i].teacherID, {
                         dayTime: duration,
                         nightTime: 0,

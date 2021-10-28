@@ -116,11 +116,16 @@ export class ValidateReservationSerivce {
         courseDuration: number,
         startDate?: Date,
         endDate?: Date,
+        isAdmin?: boolean,
     ): Promise<fromCourseInfo[]> {
         //fromCourseInfo[]
-        const termList: Term[] = await this.termService.getTerm();
+        const termList: Term[] = await this.termService.getTerm(startDate);
+
         if (startDate && endDate) {
-            if (!(termList[0].termStart <= startDate && endDate <= termList[0].termEnd)) {
+            if (
+                !(termList[0].termStart <= startDate && endDate <= termList[0].termEnd) &&
+                !isAdmin
+            ) {
                 throw new BadRequestException('only possible to reserve course from this term');
             }
         }

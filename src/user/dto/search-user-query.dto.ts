@@ -38,6 +38,13 @@ export class SearchUserDto {
     @ApiProperty({ required: false })
     readonly status?: number;
 
+    @IsInt()
+    @IsOptional()
+    @IsNotEmpty()
+    @Type(() => Number)
+    @ApiProperty({ required: false })
+    readonly termID?: number;
+
     getSqlString(): string {
         var sqlString: string = '';
         if (this.branchName) sqlString += 'User.FK_USER_branch = :branchName';

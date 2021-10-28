@@ -77,7 +77,13 @@ export class UserService {
     }
 
     async searchUser(searchUserDto: SearchUserDto): Promise<User[]> {
-        const termList = await this.termService.getTerm();
+        var termID: number;
+        if (!searchUserDto.termID) {
+            const termList = await this.termService.getTerm();
+            termID = termList[0].id;
+        } else {
+            termID = searchUserDto.termID;
+        }
 
         const users = await this.usersRepository
             .createQueryBuilder()
@@ -91,7 +97,7 @@ export class UserService {
                 'User.status',
             ])
             .leftJoin('User.ledgers', 'ledgers', 'ledgers.FK_LEDGER_termID = :termID', {
-                termID: termList[0].id,
+                termID: termID,
             })
             .addSelect(['ledgers.paidAt', 'ledgers.amount'])
             .where(searchUserDto.getSqlString(), searchUserDto.getSqlParams())
