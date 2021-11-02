@@ -19,10 +19,12 @@ import { TeacherBranchQuery } from 'src/utils/interface/Teacher-Branch-Query.int
 import {
     DeleteResult,
     FindConditions,
+    getManager,
     InsertResult,
     LessThanOrEqual,
     MoreThan,
     MoreThanOrEqual,
+    UpdateResult,
 } from 'typeorm';
 import { UpdateEndRegularDto } from '../dto/update-end-regular.dto';
 import { LinkRepository } from '../repositories/link.repository';
@@ -128,7 +130,7 @@ export class RegularReservationService extends ValidateReservationSerivce {
         condition: FindConditions<RegularSchedule>,
         checkConflict: Boolean,
         from?: number,
-    ): Promise<InsertResult> {
+    ): Promise<(InsertResult | UpdateResult)[]> {
         const termList = await this.termService.getNextTerm();
         var curTerm: Term;
         var nextTerm: Term;
@@ -166,9 +168,23 @@ export class RegularReservationService extends ValidateReservationSerivce {
             reservationList = reservationList.concat(rsrvListPerRegular);
         }
 
-        const insertRes = await this.reservationRepository.insert(reservationList);
-        const updateRes = await this.regularScheduleService.extendToNextTerm(condition, nextTerm);
-        return insertRes;
+        // const insertRes = await this.reservationRepository.insert(reservationList);
+        // const updateRes = await this.regularScheduleService.extendToNextTerm(condition, nextTerm);
+        var res = await getManager().transaction(async (transactionalEntityManager) => {
+            const insertRes = await transactionalEntityManager
+                .getRepository(Reservation)
+                .insert(reservationList);
+
+            const updateRes = await transactionalEntityManager
+                .getRepository(RegularSchedule)
+                .update(condition, {
+                    termID: nextTerm.id,
+                    endDate: nextTerm.termEnd,
+                });
+            return [insertRes, updateRes];
+        });
+
+        return res;
     }
 
     private async regularToReservationList(

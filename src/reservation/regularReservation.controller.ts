@@ -22,7 +22,7 @@ import { CreateRegularDto } from 'src/regular-schedule/dto/create-regular.dto';
 import { CreateTermDto } from 'src/term/dto/create-term.dto';
 import { TypeOrmExceptionFilter } from 'src/utils/filters/typeOrmException.filter';
 import { DeleteResultChecker } from 'src/utils/interceptors/deleteResultChecker.interceptor';
-import { DeleteResult, InsertResult } from 'typeorm';
+import { DeleteResult, InsertResult, UpdateResult } from 'typeorm';
 import { UpdateEndRegularDto } from './dto/update-end-regular.dto';
 import { RegularReservationService } from './services/regular-reservation.service';
 
@@ -77,7 +77,9 @@ export class RegularReservationController {
     })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
     @ApiNotFoundResponse({ description: 'next term is not registered' })
-    extendRegularSchedule(@Param('branch') branchName: string): Promise<InsertResult> {
+    extendRegularSchedule(
+        @Param('branch') branchName: string,
+    ): Promise<(InsertResult | UpdateResult)[]> {
         return this.regularReservationService.extendToNextTerm(
             {
                 branchName: branchName,
@@ -98,7 +100,7 @@ export class RegularReservationController {
     extendRegularFromTermID(
         @Param('branch') branchName: string,
         @Param('from') from: number,
-    ): Promise<InsertResult> {
+    ): Promise<(InsertResult | UpdateResult)[]> {
         return this.regularReservationService.extendToNextTerm(
             {
                 branchName: branchName,
@@ -116,7 +118,9 @@ export class RegularReservationController {
         description: '레귤러스케쥴에 termID가 NULL 인것을 제외한 모든 수업이 연장된다',
     })
     @ApiConflictResponse({ description: 'timeslot is conflicted with other courses' })
-    extendRegularScheduleByUser(@Param('userID') userID: string): Promise<DeleteResult> {
+    extendRegularScheduleByUser(
+        @Param('userID') userID: string,
+    ): Promise<(InsertResult | UpdateResult)[]> {
         return this.regularReservationService.extendToNextTerm(
             {
                 userID: userID,
