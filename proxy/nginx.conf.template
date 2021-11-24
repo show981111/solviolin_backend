@@ -15,6 +15,7 @@ http {
     upstream docker-express { # 1
         #server nestjs_api_dev:3000;  #docker-compose.yml 에 있는 container name
         server ${API_HOST}:3000;  #docker-compose.yml 에 있는 container name
+        keepalive 32;
     }
 
     # upstream docker-jenkins { # 2
@@ -25,6 +26,10 @@ http {
     server {
         listen 80;
         server_name xn--sy2bt7bxwhpof3wb.com;
+
+        proxy_read_timeout 600;
+       proxy_connect_timeout 600;
+       proxy_send_timeout 600;
 
         location / {
             return 301 https://$host$request_uri;
