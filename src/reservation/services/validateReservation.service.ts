@@ -83,11 +83,28 @@ export class ValidateReservationSerivce {
             }
 
             var startTimeNumber = new Date('1998-11-11 ' + res[i].startTime).getUTCHours();
-            if (
-                (startTimeNumber < 16 && makeUpStartDate.getHours() < 16) ||
-                (startTimeNumber >= 16 && makeUpStartDate.getHours() >= 16)
-            ) {
-                isTimeLineMatch = true;
+            var startDay = new Date('1998-11-11 ' + res[i].startTime).getUTCDay();
+
+            if (startDay >= 1 && startDay <= 5 && startTimeNumber < 16) {
+                // 평일 낮
+                if (
+                    makeUpStartDate.getHours() < 16 &&
+                    makeUpStartDate.getUTCDay() >= 1 && //평일 낮만 가능
+                    makeUpStartDate.getUTCDay() <= 5
+                ) {
+                    isTimeLineMatch = true;
+                }
+            } else {
+                //주말 또는 평일 저녁
+                if (
+                    !(
+                        makeUpStartDate.getHours() < 16 &&
+                        makeUpStartDate.getUTCDay() >= 1 && //평일 낮 빼고 다가능
+                        makeUpStartDate.getUTCDay() <= 5
+                    )
+                ) {
+                    isTimeLineMatch = true;
+                }
             }
 
             if (
