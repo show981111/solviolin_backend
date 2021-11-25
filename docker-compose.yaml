@@ -59,11 +59,12 @@ services:
             - '3000' # 다른 컨테이너에게 3000번 포트 open
         networks:
             - nestjs-network
-        # volumes:
-        #     - .:/usr/src/app
-        #     # - ./logs:/usr/src/app/logs
-        #     - /usr/src/app/node_modules
-        #     - /usr/src/app/dist
+        # command: node dist/src/main
+        volumes:
+            - .:/usr/src/app
+            # - ./logs:/usr/src/app/logs
+            - /usr/src/app/node_modules
+            - /usr/src/app/dist
         restart: unless-stopped
     # jenkins:
     #     build:
