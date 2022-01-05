@@ -48,13 +48,14 @@ export class RegularScheduleService {
     }
 
     async postRegularService(createRegularDto: CreateRegularDto, termID: number): Promise<number> {
-        const updatePastToNull = await this.regularScheduleRepository.update(
-            {
-                userID: createRegularDto.userID,
-                termID: termID,
-            },
-            { termID: null },
-        ); //termID 1개 에는 단 하나의 레귤러만 존재가능 : termID가 있는게 연장이 되는것.
+        // const updatePastToNull = await this.regularScheduleRepository.update(
+        //     {
+        //         userID: createRegularDto.userID,
+        //         termID: termID,
+        //     },
+        //     { termID: null },
+        // ); //termID 1개 에는 단 하나의 레귤러만 존재가능 : termID가 있는게 연장이 되는것.
+        //If regular is more than two, then it should not be null!
         const regular = new RegularSchedule();
         regular.setRegularSchedule(createRegularDto);
         regular.termID = termID;
