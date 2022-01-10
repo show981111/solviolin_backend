@@ -82,15 +82,15 @@ export class ValidateReservationSerivce {
                 isTeacherBranchMatch = true;
             }
 
-            var startTimeNumber = new Date('1998-11-11 ' + res[i].startTime).getUTCHours();
-            var startDay = new Date('1998-11-11 ' + res[i].startTime).getUTCDay();
+            var startTimeNumber = new Date('1998-11-11 ' + res[i].startTime).getHours();
+            var startDay: number = res[i].dow;
 
             if (startDay >= 1 && startDay <= 5 && startTimeNumber < 16) {
                 // 평일 낮
                 if (
                     makeUpStartDate.getHours() < 16 &&
-                    makeUpStartDate.getUTCDay() >= 1 && //평일 낮만 가능
-                    makeUpStartDate.getUTCDay() <= 5
+                    makeUpStartDate.getDay() >= 1 && //평일 낮만 가능
+                    makeUpStartDate.getDay() <= 5
                 ) {
                     isTimeLineMatch = true;
                 }
@@ -99,8 +99,8 @@ export class ValidateReservationSerivce {
                 if (
                     !(
                         makeUpStartDate.getHours() < 16 &&
-                        makeUpStartDate.getUTCDay() >= 1 && //평일 낮 빼고 다가능
-                        makeUpStartDate.getUTCDay() <= 5
+                        makeUpStartDate.getDay() >= 1 && //평일 낮 빼고 다가능
+                        makeUpStartDate.getDay() <= 5
                     )
                 ) {
                     isTimeLineMatch = true;
