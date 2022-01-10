@@ -17,7 +17,7 @@ services:
             - API_HOST=${API_HOST}
         restart: 'unless-stopped' # 내부에서 에러로 인해 container가 죽을 경우 restart
         depends_on:
-            - prod
+            - dev
         command: ["/bin/bash", "-c", "envsubst '$$API_HOST' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"]
 
         # command: '/bin/sh -c ''envsubst "$$API_HOST" < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
@@ -34,7 +34,7 @@ services:
             context: .
             target: development
             dockerfile: ./Dockerfile
-        command: npm run start:dev #node dist/src/main #n
+        command: node dist/main #npm run start:dev 
         ports:
             - 3000:3000
         expose:
@@ -60,11 +60,11 @@ services:
         networks:
             - nestjs-network
         # command: node dist/src/main
-        volumes:
-            - .:/usr/src/app
-            # - ./logs:/usr/src/app/logs
-            - /usr/src/app/node_modules
-            - /usr/src/app/dist
+        # volumes:
+        #     - .:/usr/src/app
+        #     # - ./logs:/usr/src/app/logs
+        #     - /usr/src/app/node_modules
+        #     - /usr/src/app/dist
         restart: unless-stopped
     # jenkins:
     #     build:
