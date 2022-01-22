@@ -2,7 +2,7 @@
   Backend for Solviolin Academy Course Reservation Application
 </p>
 
-API DESCRIPTION : <a href = 솔바이올린.com/api-docs>swagger-api-description</a>
+API DESCRIPTION : <a href = https://xn--sy2bt7bxwhpof3wb.com/api-docs/>swagger-api-description</a>
 
 <p>Reverse Proxy/Load Balancer : Nginx</p>
 <p>Database : MariaDB</p>
