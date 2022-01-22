@@ -84,9 +84,19 @@ export class ValidateReservationSerivce {
 
             var startTimeNumber = new Date('1998-11-11 ' + res[i].startTime).getHours();
             var startDay: number = res[i].dow;
-
+            console.log(res[i]);
+            console.log(startDay, ' ', startTimeNumber);
+            console.log(
+                'makeUpdate',
+                makeUpStartDate,
+                ' ',
+                makeUpStartDate.getHours(),
+                ' ',
+                makeUpStartDate.getDay(),
+            );
             if (startDay >= 1 && startDay <= 5 && startTimeNumber < 16) {
                 // 평일 낮
+                console.log('week day');
                 if (
                     makeUpStartDate.getHours() < 16 &&
                     makeUpStartDate.getDay() >= 1 && //평일 낮만 가능
@@ -95,16 +105,9 @@ export class ValidateReservationSerivce {
                     isTimeLineMatch = true;
                 }
             } else {
+                console.log('other');
                 //주말 또는 평일 저녁
-                if (
-                    !(
-                        makeUpStartDate.getHours() < 16 &&
-                        makeUpStartDate.getDay() >= 1 && //평일 낮 빼고 다가능
-                        makeUpStartDate.getDay() <= 5
-                    )
-                ) {
-                    isTimeLineMatch = true;
-                }
+                isTimeLineMatch = true;
             }
 
             if (
