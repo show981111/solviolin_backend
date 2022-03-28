@@ -121,7 +121,7 @@ export class RegularReservationService extends ValidateReservationSerivce {
         );
         const deleteRes = await this.reservationRepository.delete({
             regularID: id,
-            startDate: MoreThan(updateEndRegularDto.endDate),
+            startDate: MoreThanOrEqual(updateEndRegularDto.endDate),
         });
         return deleteRes;
     }
