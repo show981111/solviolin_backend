@@ -18,6 +18,9 @@ services:
         restart: 'unless-stopped' # 내부에서 에러로 인해 container가 죽을 경우 restart
         depends_on:
             - dev
+        logging:
+            options:
+                max-size: 3m
         command: ["/bin/bash", "-c", "envsubst '$$API_HOST' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"]
 
         # command: '/bin/sh -c ''envsubst "$$API_HOST" < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
@@ -27,6 +30,9 @@ services:
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
         entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+        logging:
+            options:
+                max-size: 3m
     dev:
         container_name: nestjs_api_dev
         image: nestjs-api-dev:1.0.0
@@ -41,9 +47,12 @@ services:
             - '3000' # 다른 컨테이너에게 3000번 포트 open
         networks:
             - nestjs-network
-        volumes:
+        logging:
+            options:
+                max-size: 3m
+        # volumes:
             # - .:/usr/src/app
-            - /usr/src/app/node_modules
+            # - /usr/src/app/node_modules
         restart: unless-stopped
     prod:
         container_name: nestjs_api_prod
